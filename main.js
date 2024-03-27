@@ -1,114 +1,101 @@
 import * as THREE from "three";
-import WebGL from "three/addons/capabilities/WebGL.js";
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GUI } from "dat.gui";
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-let camera = 0;
-let renderer = 0;
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 
-// initialization of Three.js
-function init() {
-    // Check if WebGL is available see Three/examples
-    // No need for webgl2 here - change as appropriate
-    if (WebGL.isWebGLAvailable() === false) {
-        // if not print error on console and exit
-        document.body.appendChild(WebGL.getWebGLErrorMessage());
+
+let scene = new THREE.Scene();
+scene.background = new THREE.Color("white");
+
+let camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 1000);
+camera.position.set(0,50,50);
+
+let renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+// make values computed by render properly display on monitor
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.physicallyCorrectLights = true;
+//renderer.shadowMap.enabled = true;
+//renderer.shadowMap.type = PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// initalize environment mapping variable
+let envmap;
+
+// set orbit controls to always look at origin
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0,0,0);
+controls.dampingFactor = 0.05;
+controls.enableDamping = true;
+
+// animation loop
+(async function(){
+    // process the environment app to use in our materials
+    let prem = new THREE.PMREMGenerator(renderer);
+    let envmapTexture = await new RGBELoader().setDataType(THREE.FloatType).loadAsync("assests/snowy_hillside_4k.hdr");
+    envmap = prem.fromEquirectangular(envmapTexture).texture;
+    
+    const simplex = new SimplexNoise(); // optional seed as a string parameter
+
+    // creating map of hexagons
+    for(let i=-10; i<=10; i++){
+        for(let j=-10; j<=10; j++){
+            
+            let position = titleToPosition(i,j);
+
+            // if the radius of heaxgon outside of circle radius of size 16, we skip it
+            if(position.length()>16) continue;
+
+            let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
+            noise = Math.pow(noise, 1.5);
+
+            makeHex(noise * 10, position, envmap);
+        }
     }
-    // add our rendering surface and initialize the renderer
-    var container = document.createElement("div");
-    document.body.appendChild(container);
 
-    // WebGL2 examples suggest we need a canvas
-    // canvas = document.createElement( 'canvas' );
-    // var context = canvas.getContext( 'webgl2' );
-    // var renderer = new THREE.WebGLRenderer( { canvas: canvas, context: context } );
-    renderer = new THREE.WebGLRenderer();
-    // set some state - here just clear color
-    renderer.setClearColor(new THREE.Color(0x333333));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    // add the output of the renderer to the html element
-    container.appendChild(renderer.domElement);
-// All drawing will be organized in a scene graph
-    var scene = new THREE.Scene();
+    // create a new hexagon geomtry with added environment material mapping
+    makeHex(3,new THREE.Vector2(0,0));
+    let hexagonMesh = new THREE.Mesh(
+        hexagonGeos,
+        new THREE.MeshStandardMaterial({
+            envMap: envmap,
+            flatShading: true,
+        })
+    );
+    
+    scene.add(hexagonMesh);
 
-    var axes = new THREE.AxesHelper(10);
-    scene.add(axes);
-
-    const ambientLight = new THREE.AmbientLight( 0x404040, 54);
-    scene.add(ambientLight);
-
-    // instantiate a loader
-    const loader = new OBJLoader();
-
-    // //load a resource
-    // loader.load(
-    //     // resource URL
-    //     'models/....obj',
-    //     // called when resource is loaded
-    //     function ( object ) {
-
-    //         scene.add( object );
-
-    //     },
-    //     // called when loading is in progresses
-    //     function ( xhr ) {
-
-    //         console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-    //     },
-    //     // called when loading has errors
-    //     function ( error ) {
-
-    //         console.log( 'An error happened' );
-
-    //     }
-    // );
-var aspectRatio = window.innerWidth/window.innerHeight;
-
-    // Camera needs to be global
-    const camera = new THREE.PerspectiveCamera(45, aspectRatio, 1, 1000);
-
-    const controls = new OrbitControls( camera, renderer.domElement );
-
-    // position the camera back and point to the center of the scene
-    camera.position.set( 0, 100, 100); 
-    // at 0 0 0 on the scene
-    camera.lookAt(scene.position); 
-
-
-    // render the scene
-    render();
-
-
-    function render() {
-        // render using requestAnimationFrame - register function
-        requestAnimationFrame(render);
-        // add an animation for your torus 
+    renderer.setAnimationLoop(() => {
         controls.update();
+        renderer.render(scene,camera);
+    });
+})();
 
-        renderer.render(scene, camera);
-    }
-
-
+// change i,j values to vector coordinates in order to adjust hexagon offset
+function titleToPosition(X,Y){
+    return new THREE.Vector2((X +(Y%2)*0.5)*1.77,Y*1.535);
 }
 
-function onResize() {
-    console.log("Resizing");
 
-    var aspect = window.innerWidth / window.innerHeight;
-    if (camera instanceof THREE.PerspectiveCamera) {
-        camera.aspect = aspect;
-    } else {
-        // ToDo: Must update projection matrix
-    }
-    camera.updateProjectionMatrix();
-    // If we use a canvas then we also have to worry of resizing it
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    updateMatDisplay();
+// place holder hex to use 
+let hexagonGeos = new THREE.BoxGeometry(0,0,0);
+
+
+function hexGeo(height,position){
+    let geo  = new THREE.CylinderGeometry(1, 1, height, 6, 1, false);
+    geo.translate(position.x, height * 0.5, position.y);
+    
+    return geo;
 }
 
-window.onload = init;
+// merge geometries together to reduce the amount of draw calls
+function makeHex(height,position){
+    let geo  = hexGeo(height,position);
+    hexagonGeos = mergeGeometries([hexagonGeos,geo])
+}
 
-// register our resize event function
-window.addEventListener("resize", onResize, true);
