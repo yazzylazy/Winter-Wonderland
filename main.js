@@ -27,6 +27,9 @@ document.body.appendChild(renderer.domElement);
 // initalize environment mapping variable
 let envmap;
 
+// constant for height of mountains
+const MAX_HEIGHT = 10;
+
 // set orbit controls to always look at origin
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0,0,0);
@@ -51,10 +54,12 @@ controls.enableDamping = true;
             // if the radius of heaxgon outside of circle radius of size 16, we skip it
             if(position.length()>16) continue;
 
+            // +1 * 0.5 is a normalization factor we add to keep the noise between [0,1]
             let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
+            // makes mountains a little steeper
             noise = Math.pow(noise, 1.5);
 
-            makeHex(noise * 10, position, envmap);
+            makeHex(noise * MAX_HEIGHT, position, envmap);
         }
     }
 
