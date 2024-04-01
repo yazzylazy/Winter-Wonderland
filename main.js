@@ -162,6 +162,9 @@ controls.enableDamping = true;
     // and random clouds
     clouds();
 
+    // 2 penguins
+    // penguins();
+
      // create a snowy transperent mesh encapuslating all bottom hexagons
     let Globe = new THREE.Mesh(
         new THREE.SphereGeometry(21, 50, 50,0,Math.PI * 2,0,1.57),
@@ -322,3 +325,141 @@ function clouds() {
 
     scene.add(MESH);
 }
+
+// make penguin
+function penguin(height, position) {
+    const px = Math.random() * 0.4;
+    const pz = Math.random() * 0.4;
+    const penguin = new THREE.Group();
+
+    // body
+    const points = [];
+    for (let i = 0; i < 10; i++) {
+    points.push(new THREE.Vector2(Math.sin(i * 0.2) * 0.7 + 0.1, (i - 5) * 0.2));
+    }
+    const bodyGeometry = new THREE.LatheGeometry(points);
+    const bodyMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.rotation.x = Math.PI;
+    body.name = "body";
+    penguin.add(body);
+
+    // stomach
+    const stomachGeometry = new THREE.SphereGeometry(1,32,32);
+    const scaleX = 0.7; 
+    const scaleY = 1;   
+    const scaleZ = 0.5;
+    stomachGeometry.scale(scaleX, scaleY, scaleZ);
+    const stomachMaterial = new THREE.MeshBasicMaterial({ color: "white" });
+    const stomach = new THREE.Mesh(stomachGeometry, stomachMaterial);
+    stomach.name = "stomach";
+    penguin.add(stomach);
+
+
+    // head
+    const headGeometry = new THREE.DodecahedronGeometry(0.45, 1);
+    const headMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+    const head = new THREE.Mesh(headGeometry, headMaterial);
+    head.position.set(0, 1.3, 0);
+    head.name = "head";
+
+    // face
+    const faceGeometry = new THREE.DodecahedronGeometry(0.22, 32); 
+    const faceMaterial = new THREE.MeshBasicMaterial({ color: "white" });
+    const face = new THREE.Mesh(faceGeometry, faceMaterial);
+    face.position.set(0.3, 0, 0);
+    face.rotation.y = Math.PI / 2;
+    head.add(face); 
+    penguin.add(head);
+
+    // eyes
+    const eyeOneGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+    const eyeOneMaterial = new THREE.MeshBasicMaterial({ color: "white" });
+    const eyeOne = new THREE.Mesh(eyeOneGeometry, eyeOneMaterial);
+    eyeOne.position.set(0.3, 1.4, 0.2);
+    eyeOne.name = "eyeOne";
+    penguin.add(eyeOne);
+    const eyeTwoGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+    const eyeTwoMaterial = new THREE.MeshBasicMaterial({ color: "white" });
+    const eyeTwo = new THREE.Mesh(eyeTwoGeometry, eyeTwoMaterial);
+    eyeTwo.position.set(0.3, 1.4, -0.2);
+    eyeTwo.name = "eyeTwo";
+    penguin.add(eyeTwo);
+
+    // pupils
+    const eyeLeftGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+    const eyeLeftMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+    const eyeLeft = new THREE.Mesh(eyeLeftGeometry, eyeLeftMaterial);
+    eyeLeft.position.set(0.5, 1.45, 0.2);
+    eyeLeft.name = "eyeLeft";
+    penguin.add(eyeLeft);
+    const eyeRightGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+    const eyeRightMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+    const eyeRight = new THREE.Mesh(eyeRightGeometry, eyeRightMaterial);
+    eyeRight.position.set(0.5, 1.45, -0.2);
+    eyeRight.name = "eyeRight";
+    penguin.add(eyeRight);
+
+    // beak
+    const beakGeometry = new THREE.ConeGeometry(0.07, 0.17, 8);
+    const beakMaterial = new THREE.MeshBasicMaterial({ color: "orange" });
+    const beak = new THREE.Mesh(beakGeometry, beakMaterial);
+    beak.position.set(0.5, 1.3, 0);
+    beak.rotation.x = Math.PI;
+    beak.name = "beak";
+    penguin.add(beak);
+
+    // wings
+    const leftWingGeometry = new THREE.ConeGeometry(0.3, 1.2, 8);
+    const leftWingMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+    const leftWing = new THREE.Mesh(leftWingGeometry, leftWingMaterial);
+    leftWing.position.set(0, 0.1, 0.65); 
+    leftWing.rotation.z = -Math.PI / 2; 
+    leftWing.rotation.x = -4; 
+    leftWing.name = "leftEar";
+    penguin.add(leftWing);
+    const rightWingGeometry = new THREE.ConeGeometry(0.3, 1.2, 8);
+    const rightWingMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+    const rightWing = new THREE.Mesh(rightWingGeometry, rightWingMaterial);
+    rightWing.position.set(0, 0.1, -0.65); 
+    rightWing.rotation.z = Math.PI / 2; 
+    rightWing.rotation.x = 4;
+    rightWing.name = "rightEar";
+    penguin.add(rightWing);
+
+    // legs
+    const leftLegGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.4, 8);
+    const leftLegMaterial = new THREE.MeshBasicMaterial({ color: "orange" });
+    const leftLeg = new THREE.Mesh(leftLegGeometry, leftLegMaterial);
+    leftLeg.position.set(0.6, -0.9, 0.3);
+    leftLeg.rotation.z = Math.PI / 2;
+    leftLeg.name = "frontLeg";
+    penguin.add(leftLeg);
+    const rightLegGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.4, 8);
+    const rightLegMaterial = new THREE.MeshBasicMaterial({ color: "orange" });
+    const rightLeg = new THREE.Mesh(rightLegGeometry, rightLegMaterial);
+    rightLeg.position.set(0.6, -0.9, -0.3);
+    rightLeg.rotation.z = Math.PI / 2;
+    rightLeg.name = "rearLeg";
+    penguin.add(rightLeg);
+
+    penguin.translate(position.x + px, height, position.y + pz)
+
+    return penguin;
+}
+
+// generate 3 penguins
+function penguins(){
+    let penguin1 = penguin();
+    penguin1.position.set(Math.random() * 20 - 10, 
+    Math.random() * 7 + 7, 
+    Math.random() * 20 - 10); 
+    scene.add(penguin1);
+
+    let penguin2 = penguin();
+    penguin2.position.set(Math.random() * 20 - 10, 
+    Math.random() * 7 + 7, 
+    Math.random() * 20 - 10); 
+    scene.add(penguin2);
+}
+
