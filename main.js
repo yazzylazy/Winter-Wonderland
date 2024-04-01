@@ -7,7 +7,41 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
+//import Ammo from "ammojs3";
 
+let particles; // snow flake
+let positions = [], velocities; // snow flake position (x,y,z) and flake velocity (x,y,z)
+
+const numberSnowFlakes = 15000; // number of snowFlakes
+
+const maxRange = 1000, minRange = maxRange/2; // flakes are places from -500 to 500 on x and z axis
+const minHeight = 150; // flakes are places from 150 to 500 on y axis
+
+
+const snowFlakeGeo = new THREE.BufferGeometry(); // stores our snow flake geomerty
+
+const snowFlakeTexture = new THREE.TextureLoader(); //  store our snow flake texture
+
+//addSnowFlakes();
+
+Ammo().then(AmmoStart);
+
+// entry point
+function AmmoStart()
+{
+    //code
+}
+
+// function made to initialize our dynamic universe
+function initPhysicsUniverse()
+{
+    var collisionConfiguration  = new Ammo.btDefaultCollisionConfiguration();
+    var dispatcher              = new Ammo.btCollisionDispatcher(collisionConfiguration);
+    var overlappingPairCache    = new Ammo.btDbvtBroadphase();
+    var solver                  = new Ammo.btSequentialImpulseConstraintSolver();
+    physicsUniverse               = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+    physicsUniverse.setGravity(new Ammo.btVector3(0, -75, 0));
+}
 
 let scene = new THREE.Scene();
 scene.background = new THREE.Color("#d6d1ff");
@@ -176,7 +210,8 @@ controls.enableDamping = true;
             transmission: 1,
             ior: 1.7,
             clearcoat: 1.0,
-            thickness: 0.5
+            thickness: 0.5,
+            transparent: 1,
         })
     );
     Globe.receiveShadow = true;

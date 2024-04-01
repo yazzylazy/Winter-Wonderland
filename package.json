@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "ammojs3": "^0.0.11",
     "dat.gui": "^0.7.9",
     "simplex-noise": "^4.0.1",
     "three": "^0.162.0"
