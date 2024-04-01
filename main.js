@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { FBXLoader } from 'https://unpkg.com/three@latest/examples/jsm/loaders/FBXLoader.js';
 import { GUI } from "dat.gui";
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -163,7 +164,8 @@ controls.enableDamping = true;
     clouds();
 
     // 2 penguins
-    // penguins();
+    //penguins();
+    //loaderTwo();
 
      // create a snowy transperent mesh encapuslating all bottom hexagons
     let Globe = new THREE.Mesh(
@@ -463,3 +465,27 @@ function penguins(){
     scene.add(penguin2);
 }
 
+function loaderTwo(){
+    const loader = new FBXLoader();
+    loader.load( 'assets/Shoved Reaction With Spin.fbx', function ( object ) {
+        //object.scale.setScalar(0.2);
+        // mixer = new THREE.AnimationMixer( object );
+        // const action = mixer.clipAction( object.animations[ 0 ] );
+        // action.play();
+        object.traverse( function ( child ) {
+            if ( child.isMesh ) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        } );
+
+        object.scale.set(0.5, 0.5, 0.5);
+        const mixer = new THREE.AnimationMixer(object);
+        if(object.animations.length > 0) {
+            const action = mixer.clipAction(object.animations[0]);
+            action.play();
+        }
+
+        scene.add( object );
+    });
+}
