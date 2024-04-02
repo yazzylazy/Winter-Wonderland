@@ -7,24 +7,25 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
-//import Ammo from "ammojs3";
+import Ammo from "ammojs3";
 
 let particles; // snow flake
-let positions = [], velocities; // snow flake position (x,y,z) and flake velocity (x,y,z)
+let positions = [], velocities = []; // snow flake position (x,y,z) and flake velocity (x,y,z)
 
-const numberSnowFlakes = 15000; // number of snowFlakes
+const numberSnowFlakes = 500; // number of snowFlakes
 
-const maxRange = 1000, minRange = maxRange/2; // flakes are places from -500 to 500 on x and z axis
-const minHeight = 150; // flakes are places from 150 to 500 on y axis
+const maxRange = 400, minRange = maxRange/2; // flakes are places from -200 to 200 on x and z axis
+const minHeight = -50; // flakes are places from -50 to 50 on y axis
 
 
 const snowFlakeGeo = new THREE.BufferGeometry(); // stores our snow flake geomerty
 
-const snowFlakeTexture = new THREE.TextureLoader(); //  store our snow flake texture
 
-//addSnowFlakes();
 
+// ammo js
 Ammo().then(AmmoStart);
+
+var physicsUniverse = undefined;
 
 // entry point
 function AmmoStart()
@@ -47,7 +48,7 @@ let scene = new THREE.Scene();
 scene.background = new THREE.Color("#d6d1ff");
 
 let camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 1000);
-camera.position.set(0,40,40);
+camera.position.set(0,500,500);
 
 let renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
@@ -63,7 +64,7 @@ document.body.appendChild(renderer.domElement);
 
 // adding a point light
 const light = new THREE.PointLight( new THREE.Color("#fffeed").convertSRGBToLinear().convertSRGBToLinear(),200,300); // convert color of the light so renderer understands
-light.position.set(10,20,10);
+light.position.set(100,200,100);
 
 // make sure the light can cast shadows
 light.castShadow = true;
@@ -109,7 +110,8 @@ controls.enableDamping = true;
         SnowStone: await new THREE.TextureLoader().loadAsync("assets/snowStone.jpg"),
         container: await new THREE.TextureLoader().loadAsync("assets/houseFloor.jpg"),
         wood: await new THREE.TextureLoader().loadAsync("assets/wood.jpg"),
-        glass: await new THREE.TextureLoader().loadAsync("assets/glass.jpg")
+        glass: await new THREE.TextureLoader().loadAsync("assets/glass.jpg"),
+        snowFlake: await new THREE.TextureLoader().loadAsync("images/snowflake2.jpg")
       };
     
     const simplex = new SimplexNoise(); // optional seed as a string parameter
@@ -163,7 +165,7 @@ controls.enableDamping = true;
     snowFloorMesh.receiveShadow = true;
     snowFloorMesh.rotation.y = -Math.PI * 0.333 * 0.5;
     snowFloorMesh.position.set(0, MAX_HEIGHT * 0.0, 0);
-    scene.add(snowFloorMesh);
+    
 
     //add another cylinder for walls around our other meshes
     let mapContainer =new  THREE.Mesh(
@@ -178,7 +180,6 @@ controls.enableDamping = true;
     mapContainer.receiveShadow = true;
     mapContainer.rotation.y = -Math.PI * 0.333 * 0.5;
     mapContainer.position.set(0, MAX_HEIGHT * 0.0, 0);
-    scene.add(mapContainer);
 
     // add a cylinder for the floor around the entire mesh
     let mapFloor = new THREE.Mesh(
@@ -192,7 +193,6 @@ controls.enableDamping = true;
       );
     mapFloor.receiveShadow = true;
     mapFloor.position.set(0, -MAX_HEIGHT * 0.05, 0);
-    scene.add(mapFloor);
     
     // and random clouds
     clouds();
@@ -200,6 +200,8 @@ controls.enableDamping = true;
     // 2 penguins
     //penguins();
     //loaderTwo();
+
+    addSnowflakes(textures);
 
      // create a snowy transperent mesh encapuslating all bottom hexagons
     let Globe = new THREE.Mesh(
@@ -211,13 +213,23 @@ controls.enableDamping = true;
             ior: 1.7,
             clearcoat: 1.0,
             thickness: 0.5,
-            transparent: 1,
+            transparent: true,
+            opacity: 0.3
         })
     );
     Globe.receiveShadow = true;
-    scene.add(Globe);
+
+    const group = new THREE.Group();
+    group.add(Globe);
+    group.add(mapFloor);
+    group.add(mapContainer);
+    group.add(snowFloorMesh);
+    group.add(stoneMesh,iceMesh,snowMesh,snow2Mesh,snowMossMesh);
+    group.scale.setScalar(10);
+    scene.add(group);
 
     renderer.setAnimationLoop(() => {
+        updateSnowFlakes();
         controls.update();
         renderer.render(scene,camera);
     });
@@ -361,6 +373,59 @@ function clouds() {
     );
 
     scene.add(MESH);
+}
+
+function updateSnowFlakes(){
+    // each snow flake has positions (x,y,z) that we itterate over and adjust
+    for (let i=0; i< numberSnowFlakes*3; i+=3){
+        // add veloctiy to position of each snow flake
+        particles.geometry.attributes.position.array[i] -=  particles.geometry.attributes.velocity.array[i]; // change x position by x velocity
+        particles.geometry.attributes.position.array[i+1] -=  particles.geometry.attributes.velocity.array[i+1]; // change y position by y velocity
+        particles.geometry.attributes.position.array[i+2] -=  particles.geometry.attributes.velocity.array[i+2]; // change z position by z velocity
+
+        //checks to see if flake is below grade and resets its position
+        if(particles.geometry.attributes.position.array[i+1] < 0){
+            particles.geometry.attributes.position.array[i] = Math.floor(Math.random()*maxRange - minRange);
+            particles.geometry.attributes.position.array[i+1] = Math.floor(Math.random()* minRange + minHeight);
+            particles.geometry.attributes.position.array[i+2] = Math.floor(Math.random()*maxRange - minRange);
+        }
+    }
+    // set below to true in order to update position array of particles
+    particles.geometry.attributes.position.needsUpdate = true;
+}
+
+function addSnowflakes(textures){
+
+    // create the snow flake geometry
+    for(let i=0;i<numberSnowFlakes;i++){
+        positions.push(
+            Math.floor(Math.random() *maxRange - minRange), // x between max range and min range
+            Math.floor(Math.random() *maxRange + minHeight), // y between min range and min height
+            Math.floor(Math.random() *maxRange - minRange), // y between max range and min range
+        );
+        velocities.push(
+            Math.floor(Math.random()*6 - 3) * 0.1, 
+            Math.floor(Math.random()*5 + 0.12) * 0.18, 
+            Math.floor(Math.random()*6 - 3) * 0.1, 
+        )
+    }
+
+    // set attributes of position and velocity in its geometry
+    snowFlakeGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+    snowFlakeGeo.setAttribute('velocity', new THREE.Float32BufferAttribute(velocities,3));
+
+    // create material for snowflake
+    const snowFlakeMaterial = new THREE.PointsMaterial({
+        size: 4,
+        map: textures.snowFlake,
+        blending: THREE.AdditiveBlending,
+        depthTest: false, // we dont need to know if objects snowflakes overlap
+        transparent: true,
+        opacity: 0.7
+    });
+
+    particles = new THREE.Points(snowFlakeGeo,snowFlakeMaterial);
+    scene.add(particles);
 }
 
 // make penguin
