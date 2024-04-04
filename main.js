@@ -199,7 +199,6 @@ controls.enableDamping = true;
 
     // 2 penguins
     //penguins();
-    //loaderTwo();
 
     addSnowflakes(textures);
 
@@ -429,9 +428,7 @@ function addSnowflakes(textures){
 }
 
 // make penguin
-function penguin(height, position) {
-    const px = Math.random() * 0.4;
-    const pz = Math.random() * 0.4;
+function penguin() {
     const penguin = new THREE.Group();
 
     // body
@@ -545,8 +542,6 @@ function penguin(height, position) {
     rightLeg.name = "rearLeg";
     penguin.add(rightLeg);
 
-    penguin.translate(position.x + px, height, position.y + pz)
-
     return penguin;
 }
 
@@ -565,27 +560,301 @@ function penguins(){
     scene.add(penguin2);
 }
 
-function loaderTwo(){
-    const loader = new FBXLoader();
-    loader.load( 'assets/Shoved Reaction With Spin.fbx', function ( object ) {
-        //object.scale.setScalar(0.2);
-        // mixer = new THREE.AnimationMixer( object );
-        // const action = mixer.clipAction( object.animations[ 0 ] );
-        // action.play();
-        object.traverse( function ( child ) {
-            if ( child.isMesh ) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        } );
+function reindeer(){
+    const reindeer = new THREE.Group();
 
-        object.scale.set(0.5, 0.5, 0.5);
-        const mixer = new THREE.AnimationMixer(object);
-        if(object.animations.length > 0) {
-            const action = mixer.clipAction(object.animations[0]);
-            action.play();
-        }
+    // body
+    const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.4, 2, 16);
+    const bodyMaterial = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.position.set(0, 0.3, 0);
+    body.rotation.z = Math.PI / 2; 
+    body.name = "body";
+    reindeer.add(body);
 
-        scene.add( object );
-    });
+    // tail
+    const tailGeometry = new THREE.ConeGeometry(0.2, 0.5, 8);
+    const tailMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const tail = new THREE.Mesh(tailGeometry, tailMaterial);
+    tail.position.set(1.1, 0.2, 0);
+    tail.rotation.z = - Math.PI / 1.5; 
+    tail.name = "tail";
+    reindeer.add(tail);
+
+    // head
+    const headGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+    const headMaterial = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const head = new THREE.Mesh(headGeometry, headMaterial);
+    head.position.set(-1, 1, 0);
+    head.name = "head";
+    reindeer.add(head);
+
+    // nose
+    const noseGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+    const noseMaterial = new THREE.MeshBasicMaterial({ color: "red" });
+    const nose = new THREE.Mesh(noseGeometry, noseMaterial);
+    nose.position.set(-1.6, 0.9, 0);
+    nose.name = "nose";
+    reindeer.add(nose);
+
+    // eyes
+    const eyeOneGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+    const eyeOneMaterial = new THREE.MeshBasicMaterial({ color: "white" });
+    const eyeOne = new THREE.Mesh(eyeOneGeometry, eyeOneMaterial);
+    eyeOne.position.set(-1.3, 1.2, 0.2);
+    eyeOne.name = "eyeOne";
+    reindeer.add(eyeOne);
+    const eyeTwoGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+    const eyeTwoMaterial = new THREE.MeshBasicMaterial({ color: "white" });
+    const eyeTwo = new THREE.Mesh(eyeTwoGeometry, eyeTwoMaterial);
+    eyeTwo.position.set(-1.3, 1.2, -0.2);
+    eyeTwo.name = "eyeTwo";
+    reindeer.add(eyeTwo);
+
+    // pupils
+    const eyeLeftGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+    const eyeLeftMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+    const eyeLeft = new THREE.Mesh(eyeLeftGeometry, eyeLeftMaterial);
+    eyeLeft.position.set(-1.5, 1.2, 0.2);
+    eyeLeft.name = "eyeLeft";
+    reindeer.add(eyeLeft);
+    const eyeRightGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+    const eyeRightMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+    const eyeRight = new THREE.Mesh(eyeRightGeometry, eyeRightMaterial);
+    eyeRight.position.set(-1.5, 1.2, -0.2);
+    eyeRight.name = "eyeRight";
+    reindeer.add(eyeRight);
+
+    // left antler
+    const leftEarGroup = new THREE.Group();
+    const leftEarGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.3, 16);
+    const leftEarMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const leftEar = new THREE.Mesh(leftEarGeometry, leftEarMaterial);
+    leftEar.position.set(0, 0, 0);
+    leftEar.name = "baseLeft";
+    leftEarGroup.add(leftEar);
+
+    const leftEarOneGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.7, 16);
+    const leftEarOneMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const leftEarOne = new THREE.Mesh(leftEarOneGeometry, leftEarOneMaterial);
+    leftEarOne.position.set(0, 0.35, 0.22);
+    leftEarOne.rotation.x = - Math.PI / 1.3; 
+    leftEarOne.name = "leftOne";
+    leftEarGroup.add(leftEarOne);
+
+    const leftEarTwoGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.6, 16);
+    const leftEarTwoMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const leftEarTwo = new THREE.Mesh(leftEarTwoGeometry, leftEarTwoMaterial);
+    leftEarTwo.position.set(0, 0.87, 0.5);
+    leftEarTwo.rotation.x = - Math.PI / 1.09; 
+    leftEarTwo.name = "leftTwo";
+    leftEarGroup.add(leftEarTwo);
+
+
+    const leftEarThreeGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.35, 16);
+    const leftEarThreeMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const leftEarThree = new THREE.Mesh(leftEarThreeGeometry, leftEarThreeMaterial);
+    leftEarThree.position.set(0, 0.58, 0.2);
+    leftEarThree.rotation.x = Math.PI / 1.5; 
+    leftEarThree.name = "leftThree";
+    leftEarGroup.add(leftEarThree);
+
+    const leftEarFourGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.3, 16);
+    const leftEarFourMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const leftEarFour = new THREE.Mesh(leftEarFourGeometry, leftEarFourMaterial);
+    leftEarFour.position.set(0, 0.78, 0.01);
+    leftEarFour.rotation.x = Math.PI / 1.1; 
+    leftEarFour.name = "leftFour";
+    leftEarGroup.add(leftEarFour);
+
+    const leftEarFiveGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.32, 16);
+    const leftEarFiveMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const leftEarFive = new THREE.Mesh(leftEarFiveGeometry, leftEarFiveMaterial);
+    leftEarFive.position.set(0, 0.9, 0.4);
+    leftEarFive.rotation.x = Math.PI / 1.3; 
+    leftEarFive.name = "leftFive";
+    leftEarGroup.add(leftEarFive);
+
+    leftEarGroup.position.set(-1, 1.6, 0.2);
+    reindeer.add(leftEarGroup);
+
+    // right antler
+    const rightEarGroup = new THREE.Group();
+    const rightEarGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.3, 16);
+    const rightEarMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const rightEar = new THREE.Mesh(rightEarGeometry, rightEarMaterial);
+    rightEar.position.set(0, 0, 0);
+    rightEar.name = "baseRight";
+    rightEarGroup.add(rightEar);
+
+    const rightEarOneGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.7, 16);
+    const rightEarOneMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const rightEarOne = new THREE.Mesh(rightEarOneGeometry, rightEarOneMaterial);
+    rightEarOne.position.set(0, 0.35, -0.22);
+    rightEarOne.rotation.x = Math.PI / 1.3;
+    rightEarOne.name = "rightOne";
+    rightEarGroup.add(rightEarOne);
+
+    const rightEarTwoGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.6, 16);
+    const rightEarTwoMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const rightEarTwo = new THREE.Mesh(rightEarTwoGeometry, rightEarTwoMaterial);
+    rightEarTwo.position.set(0, 0.87, -0.5);
+    rightEarTwo.rotation.x = Math.PI / 1.09;
+    rightEarTwo.name = "rightTwo";
+    rightEarGroup.add(rightEarTwo);
+
+    const rightEarThreeGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.35, 16);
+    const rightEarThreeMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const rightEarThree = new THREE.Mesh(rightEarThreeGeometry, rightEarThreeMaterial);
+    rightEarThree.position.set(0, 0.58, -0.2);
+    rightEarThree.rotation.x = -Math.PI / 1.5;
+    rightEarThree.name = "rightThree";
+    rightEarGroup.add(rightEarThree);
+
+    const rightEarFourGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.3, 16);
+    const rightEarFourMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const rightEarFour = new THREE.Mesh(rightEarFourGeometry, rightEarFourMaterial);
+    rightEarFour.position.set(0, 0.78, -0.01);
+    rightEarFour.rotation.x = -Math.PI / 1.1;
+    rightEarFour.name = "rightFour";
+    rightEarGroup.add(rightEarFour);
+
+    const rightEarFiveGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.32, 16);
+    const rightEarFiveMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
+    const rightEarFive = new THREE.Mesh(rightEarFiveGeometry, rightEarFiveMaterial);
+    rightEarFive.position.set(0, 0.9, -0.4);
+    rightEarFive.rotation.x = -Math.PI / 1.3;
+    rightEarFive.name = "rightFive";
+    rightEarGroup.add(rightEarFive);
+
+    rightEarGroup.position.set(-1, 1.6, -0.2);
+    reindeer.add(rightEarGroup);
+
+    // front left leg
+    const frontLeftLegGroup = new THREE.Group();
+    const frontLeftLegCylinder1Geometry = new THREE.CylinderGeometry(0.1, 0.1, 0.6, 16);
+    const frontLeftLegCylinder1Material = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const frontLeftLegCylinder1 = new THREE.Mesh(frontLeftLegCylinder1Geometry, frontLeftLegCylinder1Material);
+    frontLeftLegCylinder1.position.set(0, -0.175, 0);
+    frontLeftLegCylinder1.name = "frontLeftLegCylinder1";
+    frontLeftLegGroup.add(frontLeftLegCylinder1);
+
+    const frontLeftLegCylinder2Geometry = new THREE.CylinderGeometry(0.08, 0.08, 1, 16);
+    const frontLeftLegCylinder2Material = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const frontLeftLegCylinder2 = new THREE.Mesh(frontLeftLegCylinder2Geometry, frontLeftLegCylinder2Material);
+    frontLeftLegCylinder2.position.set(0, -0.525, 0);
+    frontLeftLegCylinder2.name = "frontLeftLegCylinder2";
+    frontLeftLegGroup.add(frontLeftLegCylinder2);
+
+    frontLeftLegGroup.position.set(0.7, -0.1, 0.2);
+    reindeer.add(frontLeftLegGroup);
+
+    // front right leg
+    const frontRightLegGroup = new THREE.Group();
+    const frontRightLegCylinder1Geometry = new THREE.CylinderGeometry(0.1, 0.1, 0.6, 16);
+    const frontRightLegCylinder1Material = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const frontRightLegCylinder1 = new THREE.Mesh(frontRightLegCylinder1Geometry, frontRightLegCylinder1Material);
+    frontRightLegCylinder1.position.set(0, -0.175, 0);
+    frontRightLegCylinder1.name = "frontRightLegCylinder1";
+    frontRightLegGroup.add(frontRightLegCylinder1);
+
+    const frontRightLegCylinder2Geometry = new THREE.CylinderGeometry(0.08, 0.08, 1, 16);
+    const frontRightLegCylinder2Material = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const frontRightLegCylinder2 = new THREE.Mesh(frontRightLegCylinder2Geometry, frontRightLegCylinder2Material);
+    frontRightLegCylinder2.position.set(0, -0.525, 0);
+    frontRightLegCylinder2.name = "frontRightLegCylinder2";
+    frontRightLegGroup.add(frontRightLegCylinder2);
+
+    frontRightLegGroup.position.set(-0.35, -0.1, 0.2);
+    reindeer.add(frontRightLegGroup);
+
+    // rear left leg
+    const rearLeftLegGroup = new THREE.Group();
+    const rearLeftLegCylinder1Geometry = new THREE.CylinderGeometry(0.1, 0.1, 0.6, 16);
+    const rearLeftLegCylinder1Material = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const rearLeftLegCylinder1 = new THREE.Mesh(rearLeftLegCylinder1Geometry, rearLeftLegCylinder1Material);
+    rearLeftLegCylinder1.position.set(0, -0.175, 0);
+    rearLeftLegCylinder1.name = "rearLeftLegCylinder1";
+    rearLeftLegGroup.add(rearLeftLegCylinder1);
+
+    const rearLeftLegCylinder2Geometry = new THREE.CylinderGeometry(0.08, 0.08, 1, 16);
+    const rearLeftLegCylinder2Material = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const rearLeftLegCylinder2 = new THREE.Mesh(rearLeftLegCylinder2Geometry, rearLeftLegCylinder2Material);
+    rearLeftLegCylinder2.position.set(0, -0.525, 0);
+    rearLeftLegCylinder2.name = "rearLeftLegCylinder2";
+    rearLeftLegGroup.add(rearLeftLegCylinder2);
+
+    rearLeftLegGroup.position.set(0.7, -0.1, -0.1);
+    reindeer.add(rearLeftLegGroup);
+
+    // rear right leg
+    const rearRightLegGroup = new THREE.Group();
+    const rearRightLegCylinder1Geometry = new THREE.CylinderGeometry(0.1, 0.1, 0.6, 16);
+    const rearRightLegCylinder1Material = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const rearRightLegCylinder1 = new THREE.Mesh(rearRightLegCylinder1Geometry, rearRightLegCylinder1Material);
+    rearRightLegCylinder1.position.set(0, -0.175, 0);
+    rearRightLegCylinder1.name = "rearRightLegCylinder1";
+    rearRightLegGroup.add(rearRightLegCylinder1);
+
+    const rearRightLegCylinder2Geometry = new THREE.CylinderGeometry(0.08, 0.08, 1, 16);
+    const rearRightLegCylinder2Material = new THREE.MeshBasicMaterial({ color: "#6C392F" });
+    const rearRightLegCylinder2 = new THREE.Mesh(rearRightLegCylinder2Geometry, rearRightLegCylinder2Material);
+    rearRightLegCylinder2.position.set(0, -0.525, 0);
+    rearRightLegCylinder2.name = "rearRightLegCylinder2";
+    rearRightLegGroup.add(rearRightLegCylinder2);
+
+    rearRightLegGroup.position.set(-0.35, -0.1, -0.1);
+    reindeer.add(rearRightLegGroup);
+
+    // sleigh
+    const sleighGroup = new THREE.Group();
+    const sleighBaseGeometry = new THREE.BoxGeometry(5, 2, 0.6);
+    const sleighBaseMaterial = new THREE.MeshBasicMaterial({ color: "#7B110D" });
+    const sleighBase = new THREE.Mesh(sleighBaseGeometry, sleighBaseMaterial);
+    sleighBase.position.set(4.4, 0.8, 0.15);
+    sleighBase.rotation.x = Math.PI / 2;
+    sleighGroup.add(sleighBase);
+
+    const sleighFrontGeometry = new THREE.CylinderGeometry(0.6, 0.6, 2, 16, 1, false, Math.PI, Math.PI);
+    const sleighFrontMaterial = new THREE.MeshBasicMaterial({ color: "#7B110D" });
+    const sleighFront = new THREE.Mesh(sleighFrontGeometry, sleighFrontMaterial);
+    sleighFront.rotation.x = Math.PI / 2;
+    sleighFront.position.set(2, 1.2, 0.15);
+    sleighGroup.add(sleighFront);
+
+    const rodGeometry = new THREE.CylinderGeometry(0.05, 0.05, 3, 16);
+    const rodMaterial = new THREE.MeshBasicMaterial({ color: "#964B00" });
+
+    const ropeGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.5, 16);
+    const ropeMaterial = new THREE.MeshBasicMaterial({ color: "#964B00" });
+
+    // left rod
+    const leftRod = new THREE.Mesh(rodGeometry, rodMaterial);
+    leftRod.rotation.z = Math.PI / 2;
+    leftRod.position.set(4, 0.3, -0.5);
+    sleighGroup.add(leftRod);
+
+    // right rod
+    const rightRod = new THREE.Mesh(rodGeometry, rodMaterial);
+    rightRod.rotation.z = Math.PI / 2;
+    rightRod.position.set(4, 0.3, 0.5);
+    sleighGroup.add(rightRod);
+
+    // left rope
+    const leftRope = new THREE.Mesh(ropeGeometry, ropeMaterial);
+    leftRope.rotation.z = Math.PI / 2;
+    leftRope.position.set(1, 1.7, -0.5);
+    sleighGroup.add(leftRope);
+
+    // right rope
+    const rightRope = new THREE.Mesh(ropeGeometry, ropeMaterial);
+    rightRope.rotation.z = Math.PI / 2;
+    rightRope.position.set(1, 1.7, 0.5);
+    sleighGroup.add(rightRope);
+
+    sleighGroup.position.set(0, -1, 0); 
+    reindeer.add(sleighGroup);
+
+
+    return reindeer;
 }
