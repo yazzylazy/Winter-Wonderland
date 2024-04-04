@@ -731,6 +731,7 @@ function reindeer(){
     body.name = "body";
     reindeer.add(body);
 
+
     // tail
     const tailGeometry = new THREE.ConeGeometry(0.2, 0.5, 8);
     const tailMaterial = new THREE.MeshBasicMaterial({ color: "#97594C" });
@@ -1016,3 +1017,4 @@ function reindeer(){
 
     return reindeer;
 }
+
