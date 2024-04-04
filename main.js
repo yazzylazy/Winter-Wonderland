@@ -9,6 +9,13 @@ import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import Ammo from "ammojs3";
 
+// AMMO JS VARIABLES
+var physicsUniverse = undefined;
+var rigidBody_List = new Array(); // array of rigidbodies
+var tmpTransformation = undefined; // temporarily stores transformation
+const ammo = await new Ammo();
+
+// Snowflake variables
 let particles; // snow flake
 let positions = [], velocities = []; // snow flake position (x,y,z) and flake velocity (x,y,z)
 
@@ -20,64 +27,17 @@ const minHeight = -50; // flakes are places from -50 to 50 on y axis
 
 const snowFlakeGeo = new THREE.BufferGeometry(); // stores our snow flake geomerty
 
-
-
-// ammo js
-Ammo().then(AmmoStart);
-
-var physicsUniverse = undefined;
-
-// entry point
-function AmmoStart()
-{
-    //code
-}
-
-// function made to initialize our dynamic universe
-function initPhysicsUniverse()
-{
-    var collisionConfiguration  = new Ammo.btDefaultCollisionConfiguration();
-    var dispatcher              = new Ammo.btCollisionDispatcher(collisionConfiguration);
-    var overlappingPairCache    = new Ammo.btDbvtBroadphase();
-    var solver                  = new Ammo.btSequentialImpulseConstraintSolver();
-    physicsUniverse               = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-    physicsUniverse.setGravity(new Ammo.btVector3(0, -75, 0));
-}
-
-let scene = new THREE.Scene();
-scene.background = new THREE.Color("#d6d1ff");
-
-let camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 1000);
-camera.position.set(0,500,500);
-
-let renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(innerWidth, innerHeight);
-// make values computed by render properly display on monitor
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.physicallyCorrectLights = true;
-// enabling shadows in the renderer
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
-
-
-// adding a point light
-const light = new THREE.PointLight( new THREE.Color("#fffeed").convertSRGBToLinear().convertSRGBToLinear(),200,300); // convert color of the light so renderer understands
-light.position.set(100,200,100);
-
-// make sure the light can cast shadows
-light.castShadow = true;
-light.shadow.mapSize.width = 1024;
-light.shadow.mapSize.height = 1024;
-light.shadow.camera.near = 0.1;
-light.shadow.camera.far = 100;
-
-// add the light to our scene
-scene.add(light);
-
 // initalize environment mapping variable
 let envmap;
+
+// initialize scene
+let scene;
+// initialize clock
+let clock;
+// initialize renderer
+let renderer;
+// initialize camera
+let camera;
 
 // constant for height of mountains
 const MAX_HEIGHT = 10;
@@ -88,151 +48,350 @@ const ICE_HEIGHT = MAX_HEIGHT * 0.3;
 const mossSNOW_HEIGHT = MAX_HEIGHT * 0.0;
 
 
+function initGraphicsUniverse() {
+    // create the scene and set a background color
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color("#d6d1ff");
 
-// set orbit controls to always look at origin
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0,0,0);
-controls.dampingFactor = 0.05;
-controls.enableDamping = true;
+     // create the camera and set its position
+    camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 1000);
+    camera.position.set(0,30,80);
 
-// animation loop
-(async function(){
-    // process the environment app to use in our materials
-    let prem = new THREE.PMREMGenerator(renderer);
-    let envmapTexture = await new RGBELoader().setDataType(THREE.FloatType).loadAsync("assets/snowy_hillside_4k.hdr");
-    envmap = prem.fromEquirectangular(envmapTexture).texture;
+    // create a clock
+    clock = new THREE.Clock();
 
-    let textures = {
-        snow2: await new THREE.TextureLoader().loadAsync("assets/snow2.jpg"),
-        snow: await new THREE.TextureLoader().loadAsync("assets/snow.jpg"),
-        mossSnow: await new THREE.TextureLoader().loadAsync("assets/mossSnow.jpg"),
-        ice: await new THREE.TextureLoader().loadAsync("assets/ice.jpg"),
-        SnowStone: await new THREE.TextureLoader().loadAsync("assets/snowStone.jpg"),
-        container: await new THREE.TextureLoader().loadAsync("assets/houseFloor.jpg"),
-        wood: await new THREE.TextureLoader().loadAsync("assets/wood.jpg"),
-        glass: await new THREE.TextureLoader().loadAsync("assets/glass.jpg"),
-        snowFlake: await new THREE.TextureLoader().loadAsync("images/snowflake2.jpg")
-      };
-    
-    const simplex = new SimplexNoise(); // optional seed as a string parameter
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    // make values computed by render properly display on monitor
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.physicallyCorrectLights = true;
+    // enabling shadows in the renderer
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
 
-    // creating map of hexagons
-    for(let i=-10; i<=10; i++){
-        for(let j=-10; j<=10; j++){
-            
-            let position = titleToPosition(i,j);
+    var ambientLight = new THREE.AmbientLight(0xcccccc, 1);
+    scene.add(ambientLight);
 
-            // if the radius of heaxgon outside of circle radius of size 16, we skip it
-            if(position.length()>16) continue;
+    // adding a point light
+    const light = new THREE.PointLight( new THREE.Color("#fffeed").convertSRGBToLinear().convertSRGBToLinear(),200,300); // convert color of the light so renderer understands
+    light.position.set(10,20,10);
+   
 
-            // +1 * 0.5 is a normalization factor we add to keep the noise between [0,1]
-            let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
-            // makes mountains a little steeper
-            noise = Math.pow(noise, 1.5);
+    // make sure the light can cast shadows
+    light.castShadow = true;
+    light.shadow.mapSize.width = 1024;
+    light.shadow.mapSize.height = 1024;
+    light.shadow.camera.near = 0.1;
+    light.shadow.camera.far = 100;
 
-            makeHex(noise * MAX_HEIGHT, position, envmap);
+    // add the light to our scene
+    scene.add(light);
+
+    // set orbit controls to always look at origin
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0,0,0);
+    controls.dampingFactor = 0.05;
+    controls.enableDamping = true;
+}
+
+
+// function made to initialize our dynamic universe
+function initPhysicsUniverse()
+{
+    var collisionConfiguration  = new ammo.btDefaultCollisionConfiguration();
+    var dispatcher              = new ammo.btCollisionDispatcher(collisionConfiguration);
+    var overlappingPairCache    = new ammo.btDbvtBroadphase();
+    var solver                  = new ammo.btSequentialImpulseConstraintSolver();
+    physicsUniverse             = new ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+    physicsUniverse.setGravity(new ammo.btVector3(0, -75, 0));
+}
+
+function updatePhysicsUniverse( deltaTime )
+{
+    physicsUniverse.stepSimulation( deltaTime, 10 );
+    //console.log(rigidBody_List);
+    for ( let i = 0; i < rigidBody_List.length; i++ ){
+        let Graphics_Obj = rigidBody_List[ i ];
+        //console.log(Graphics_Obj);
+        let Physics_Obj = Graphics_Obj.userData.physicsBody;
+
+        var tmpTransformation     = undefined;
+        tmpTransformation = new ammo.btTransform();
+
+        let motionState = Physics_Obj.getMotionState();
+        if ( motionState ){
+            motionState.getWorldTransform( tmpTransformation );
+            let new_pos = tmpTransformation.getOrigin();
+            let new_qua = tmpTransformation.getRotation();
+            Graphics_Obj.position.set( new_pos.x(), new_pos.y(), new_pos.z() );
+            Graphics_Obj.quaternion.set( new_qua.x(), new_qua.y(), new_qua.z(), new_qua.w() );
         }
+    } 
+}
+
+// take a three.js mesh and convert it into a a physical object using ammo.js
+function convertToPhysics(object, position, mass, rot_quaternion,sphere,radius,height)
+{
+    let quaternion = undefined;
+    if(rot_quaternion == null)
+    {
+        quaternion = {x: 0, y: 0, z: 0, w:  1};
+    }
+    else
+    {
+      quaternion = rot_quaternion;
     }
 
-    // create a new hexagon geomtry with added environment material mapping depending on each type of hexagon
-    
-    let stoneMesh = hexMesh(stoneGeo,textures.SnowStone);
-    let iceMesh = hexMesh(iceGeo,textures.ice);
-    let snowMesh = hexMesh(snowGeo,textures.snow);
-    let snow2Mesh = hexMesh(snow2Geo,textures.snow2);
-    let snowMossMesh = hexMesh(mossGeo,textures.mossSnow);
-    
-    scene.add(stoneMesh,iceMesh,snowMesh,snow2Mesh,snowMossMesh);
 
+    // ------ Physics Universe - ammo.js ------
+    let transform = new ammo.btTransform();
+    transform.setIdentity();
+    transform.setOrigin( new ammo.btVector3( position.x, position.y, position.z ) );
+    transform.setRotation( new ammo.btQuaternion( quaternion.x, quaternion.y, quaternion.z, quaternion.w ) );
+    let defaultMotionState = new ammo.btDefaultMotionState( transform );
 
-    // create a snowy transperent mesh encapuslating all bottom hexagons
-    let snowFloorMesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(17, 17, MAX_HEIGHT * 0.13, 50),
-        new THREE.MeshPhysicalMaterial({
-          envMap: envmap,
-          color: new THREE.Color("#f5fcfb").convertSRGBToLinear().multiplyScalar(3),
-          ior: 1.3,
-          transmission: 1,
-          transparent: true,
-          thickness: 0.5,
-          envMapIntensity: 0.2, 
-          roughness: 1,
-          metalness: 0.025,
-          roughnessMap: textures.snow,
-          metalnessMap: textures.snow,
-        })
-      );
-    snowFloorMesh.receiveShadow = true;
-    snowFloorMesh.rotation.y = -Math.PI * 0.333 * 0.5;
-    snowFloorMesh.position.set(0, MAX_HEIGHT * 0.0, 0);
+    let structColShape;
+ 
+    // geometric structure of collision of our object
+    if(sphere){
+        structColShape = new ammo.btSphereShape( radius  );
+        structColShape.setMargin( 0.05 );
+    }
+    else{
+        structColShape = new ammo.btCylinderShape( new ammo.btVector3( radius, height * 0.5, radius ) );
+        structColShape.setMargin( 0.05 );
+    }
     
 
-    //add another cylinder for walls around our other meshes
-    let mapContainer =new  THREE.Mesh(
-        new  THREE.CylinderGeometry(17.1, 17.1, MAX_HEIGHT * 0.25, 50, 1, true),
-        new  THREE.MeshPhysicalMaterial({
+    // initial inertia
+    let localInertia = new ammo.btVector3( 0, 0, 0 );
+    structColShape.calculateLocalInertia( mass, localInertia );
+
+    //create our rigid body
+    let RBody_Info = new ammo.btRigidBodyConstructionInfo( mass, defaultMotionState, structColShape, localInertia );
+    let RBody = new ammo.btRigidBody( RBody_Info );
+
+    // add to our physics universe
+    physicsUniverse.addRigidBody( RBody );
+    // define the cube as userData.physicsBody
+    object.userData.physicsBody = RBody;
+    // add cube to the list
+    rigidBody_List.push(object);
+}
+
+
+// entry point
+function AmmoStart()
+{   
+    tmpTransformation = new ammo.btTransform();
+
+    initPhysicsUniverse();
+    initGraphicsUniverse();
+
+    //process the environment map to use in our materials
+    let pmremGenerator = new THREE.PMREMGenerator(renderer);
+
+    // make sure envmap loaded before texturing objects
+    new RGBELoader()
+        .setDataType(THREE.FloatType)
+        .load("assets/snowy_hillside_4k.hdr", function (texture) {
+            envmap = pmremGenerator.fromEquirectangular(texture).texture;
+            pmremGenerator.dispose();
+        // Ensure the environment map is set or updated here, e.g., for your materials or scene background
+    
+
+        let textures = {
+            snow2: new THREE.TextureLoader().load("assets/snow2.jpg"),
+            snow: new THREE.TextureLoader().load("assets/snow.jpg"),
+            mossSnow: new THREE.TextureLoader().load("assets/mossSnow.jpg"),
+            ice: new THREE.TextureLoader().load("assets/ice.jpg"),
+            SnowStone: new THREE.TextureLoader().load("assets/snowStone.jpg"),
+            container: new THREE.TextureLoader().load("assets/houseFloor.jpg"),
+            wood: new THREE.TextureLoader().load("assets/wood.jpg"),
+            glass: new THREE.TextureLoader().load("assets/glass.jpg"),
+            snowFlake: new THREE.TextureLoader().load("images/snowflake2.jpg")
+        };
+        
+        const simplex = new SimplexNoise(); // optional seed as a string parameter
+
+        // creating map of hexagons
+        for(let i=-10; i<=10; i++){
+            for(let j=-10; j<=10; j++){
+                
+                let position = titleToPosition(i,j);
+
+                // if the radius of heaxgon outside of circle radius of size 16, we skip it
+                if(position.length()>16) continue;
+
+                // +1 * 0.5 is a normalization factor we add to keep the noise between [0,1]
+                let noise = (simplex.noise2D(i * 0.1, j * 0.1) + 1) * 0.5;
+                // makes mountains a little steeper
+                noise = Math.pow(noise, 1.5);
+
+                makeHex(noise * MAX_HEIGHT, position, envmap);
+            }
+        }
+
+        // create a new hexagon geomtry with added environment material mapping depending on each type of hexagon
+        
+        let stoneMesh = hexMesh(stoneGeo,textures.SnowStone);
+        let iceMesh = hexMesh(iceGeo,textures.ice);
+        let snowMesh = hexMesh(snowGeo,textures.snow);
+        let snow2Mesh = hexMesh(snow2Geo,textures.snow2);
+        let snowMossMesh = hexMesh(mossGeo,textures.mossSnow);
+
+        // create a snowy transperent mesh encapuslating all bottom hexagons
+        let snowFloorMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(17, 17, MAX_HEIGHT * 0.13, 50),
+            new THREE.MeshPhysicalMaterial({
             envMap: envmap,
-            map: textures.container,
-            envMapIntensity: 0.2, 
-            side: THREE.DoubleSide, // render both sides
-        })
-      );
-    mapContainer.receiveShadow = true;
-    mapContainer.rotation.y = -Math.PI * 0.333 * 0.5;
-    mapContainer.position.set(0, MAX_HEIGHT * 0.0, 0);
-
-    // add a cylinder for the floor around the entire mesh
-    let mapFloor = new THREE.Mesh(
-        new  THREE.CylinderGeometry(21, 18.5, MAX_HEIGHT * 0.1, 50),
-        new  THREE.MeshPhysicalMaterial({
-            envMap: envmap,
-            map: textures.wood,
-            envMapIntensity: 0.1, 
-            side:  THREE.DoubleSide,
-        })
-      );
-    mapFloor.receiveShadow = true;
-    mapFloor.position.set(0, -MAX_HEIGHT * 0.05, 0);
-    
-    // and random clouds
-    clouds();
-
-    // 2 penguins
-    //penguins();
-
-    addSnowflakes(textures);
-
-     // create a snowy transperent mesh encapuslating all bottom hexagons
-    let Globe = new THREE.Mesh(
-        new THREE.SphereGeometry(21, 50, 50,0,Math.PI * 2,0,1.57),
-        new THREE.MeshPhysicalMaterial({
-            metalness: 0,
-            roughness: 0,
+            color: new THREE.Color("#f5fcfb").convertSRGBToLinear().multiplyScalar(3),
+            ior: 1.3,
             transmission: 1,
-            ior: 1.7,
-            clearcoat: 1.0,
-            thickness: 0.5,
             transparent: true,
-            opacity: 0.3
-        })
-    );
-    Globe.receiveShadow = true;
+            thickness: 0.5,
+            envMapIntensity: 0.2, 
+            roughness: 1,
+            metalness: 0.025,
+            roughnessMap: textures.snow,
+            metalnessMap: textures.snow,
+            })
+        );
+        snowFloorMesh.receiveShadow = true;
+        snowFloorMesh.rotation.y = -Math.PI * 0.333 * 0.5;
+        snowFloorMesh.position.set(0, MAX_HEIGHT * 0.0, 0);
 
-    const group = new THREE.Group();
-    group.add(Globe);
-    group.add(mapFloor);
-    group.add(mapContainer);
-    group.add(snowFloorMesh);
-    group.add(stoneMesh,iceMesh,snowMesh,snow2Mesh,snowMossMesh);
-    group.scale.setScalar(10);
-    scene.add(group);
+        convertToPhysics(snowFloorMesh,new THREE.Vector3(0,0,0),0,null,false,17,MAX_HEIGHT * 0.13);        
 
-    renderer.setAnimationLoop(() => {
-        updateSnowFlakes();
-        controls.update();
-        renderer.render(scene,camera);
+        //add another cylinder for walls around our other meshes
+        let mapContainer =new  THREE.Mesh(
+            new  THREE.CylinderGeometry(17.1, 17.1, MAX_HEIGHT * 0.25, 50, 1, true),
+            new  THREE.MeshPhysicalMaterial({
+                envMap: envmap,
+                map: textures.container,
+                envMapIntensity: 0.2, 
+                side: THREE.DoubleSide, // render both sides
+            })
+          );
+        mapContainer.receiveShadow = true;
+        mapContainer.rotation.y = -Math.PI * 0.333 * 0.5;
+        mapContainer.position.set(0, MAX_HEIGHT * 0.0, 0);
+
+        convertToPhysics(mapContainer,new THREE.Vector3(0,0,0),0,null,false,17.1,MAX_HEIGHT * 0.0); 
+
+        //add another cylinder for walls around our other meshes
+        let snowBallContainer =new  THREE.Mesh(
+            new  THREE.CylinderGeometry(8, 8, MAX_HEIGHT * 1.5, 50, true),
+            new  THREE.MeshPhysicalMaterial({
+                envMap: envmap,
+                map: textures.snow,
+                envMapIntensity: 0.2, 
+                side: THREE.DoubleSide, // render both sides
+            })
+        );
+        snowBallContainer.receiveShadow = true;
+        snowBallContainer.rotation.y = -Math.PI * 0.333 * 0.5;
+        snowBallContainer.position.set(50, MAX_HEIGHT * 0, 0);
+
+        convertToPhysics(snowBallContainer,new THREE.Vector3(50,0,0),0,null,false,8,MAX_HEIGHT * 1.5); 
+
+        // add a cylinder for the floor around the entire mesh
+        let mapFloor = new THREE.Mesh(
+            new  THREE.CylinderGeometry(21, 18.5, MAX_HEIGHT * 0.1, 50),
+            new  THREE.MeshPhysicalMaterial({
+                envMap: envmap,
+                map: textures.wood,
+                envMapIntensity: 0.1, 
+                side:  THREE.DoubleSide,
+            })
+          );
+        mapFloor.receiveShadow = true;
+        mapFloor.position.set(0, -MAX_HEIGHT * 0.05, 0);
+
+        convertToPhysics(mapFloor,new THREE.Vector3(0,-MAX_HEIGHT * 0.05,0),0,null,false,21,MAX_HEIGHT * 0.1); 
+        
+        // and random clouds
+        clouds();
+
+        // 2 penguins
+        penguins();
+
+        addSnowflakes(textures);
+
+         // create a snowy transperent mesh encapuslating all bottom hexagons
+        let Globe = new THREE.Mesh(
+            new THREE.SphereGeometry(21, 50, 50,0,Math.PI * 2,0,1.57),
+            new THREE.MeshPhysicalMaterial({
+                metalness: 0,
+                roughness: 0,
+                transmission: 1,
+                ior: 1.7,
+                clearcoat: 1.0,
+                thickness: 0.5,
+                transparent: true,
+                opacity: 0.2
+            })
+        );
+        Globe.receiveShadow = true;
+        convertToPhysics(Globe,new THREE.Vector3(0,0,0),0,null,true,21,0); 
+
+        let perlinBall = new THREE.Mesh(
+            new THREE.SphereGeometry(1, 50,50),
+            // new THREE.MeshPhysicalMaterial({
+                
+            // })
+        );
+        perlinBall.position.set(2,30,0);
+        convertToPhysics(perlinBall,new THREE.Vector3(2,30,0),1,null,true,1,0); 
+
+
+        // add a cylinder for the floor around the entire mesh
+        let outerFloorMesh = new THREE.Mesh(
+            new  THREE.CylinderGeometry(90, 100, MAX_HEIGHT * 0.1, 50),
+            new  THREE.MeshPhysicalMaterial({
+                envMap: envmap,
+                map: textures.snow,
+                envMapIntensity: 0.5, 
+                side:  THREE.DoubleSide,
+            })
+          );
+        outerFloorMesh.receiveShadow = true;
+        outerFloorMesh.position.set(0, -0.6, 0);
+
+        convertToPhysics(outerFloorMesh,new THREE.Vector3(0,-0.6,0),0,null,false,100,MAX_HEIGHT * 0.1); 
+
+        scene.add(Globe);
+        scene.add(mapFloor);
+        scene.add(mapContainer);
+        scene.add(snowBallContainer);
+        scene.add(snowFloorMesh);
+        scene.add(outerFloorMesh);
+        scene.add(stoneMesh,iceMesh,snowMesh,snow2Mesh,snowMossMesh);
+        scene.add(perlinBall);
+        
+        
+        render();
+
     });
-})();
+    
+    
+}
+
+Ammo().then(AmmoStart);
+
+function render()
+{
+        let deltaTime = clock.getDelta();
+        updatePhysicsUniverse( deltaTime );
+
+        updateSnowFlakes();
+        //controls.update();
+                
+        renderer.render( scene, camera );
+        requestAnimationFrame( render );
+}
 
 // change i,j values to vector coordinates in order to adjust hexagon offset
 function titleToPosition(X,Y){
@@ -548,15 +707,15 @@ function penguin() {
 // generate 3 penguins
 function penguins(){
     let penguin1 = penguin();
-    penguin1.position.set(Math.random() * 20 - 10, 
-    Math.random() * 7 + 7, 
-    Math.random() * 20 - 10); 
+    penguin1.position.set(Math.random() * 20 + 23, 
+    0.75, 
+    Math.random() * 20 +23); 
     scene.add(penguin1);
 
     let penguin2 = penguin();
-    penguin2.position.set(Math.random() * 20 - 10, 
-    Math.random() * 7 + 7, 
-    Math.random() * 20 - 10); 
+    penguin2.position.set(Math.random() * 20 +23, 
+    0.75, 
+    -Math.random() * 20 +23); 
     scene.add(penguin2);
 }
 
@@ -571,6 +730,7 @@ function reindeer(){
     body.rotation.z = Math.PI / 2; 
     body.name = "body";
     reindeer.add(body);
+
 
     // tail
     const tailGeometry = new THREE.ConeGeometry(0.2, 0.5, 8);
@@ -855,6 +1015,6 @@ function reindeer(){
     sleighGroup.position.set(0, -1, 0); 
     reindeer.add(sleighGroup);
 
-
     return reindeer;
 }
+
