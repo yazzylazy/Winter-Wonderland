@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FBXLoader } from 'https://unpkg.com/three@latest/examples/jsm/loaders/FBXLoader.js';
 import { GUI } from "dat.gui";
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
