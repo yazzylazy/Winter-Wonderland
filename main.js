@@ -339,11 +339,24 @@ function AmmoStart()
         Globe.receiveShadow = true;
         convertToPhysics(Globe,new THREE.Vector3(0,0,0),0,null,true,21,0); 
 
+        let material = new THREE.ShaderMaterial( {
+            uniforms: { 
+              time: { // float initialized to 0
+                  type: "f", 
+                  value: 0.0 
+              },
+              colors: { // float initialized to 0
+                type: "f", 
+                value: new THREE.Vector3(1,1,1)
+            }
+          },
+          vertexShader: document.getElementById( 'vertexShader' ).textContent,
+          fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+      } );
+
         let perlinBall = new THREE.Mesh(
             new THREE.SphereGeometry(1, 50,50),
-            new THREE.MeshPhysicalMaterial({
-                color: 0xffffff,
-            })
+            material
         );
         perlinBall.position.set(2,30,0);
         convertToPhysics(perlinBall,new THREE.Vector3(2,30,0),1,null,true,1,0); 
@@ -370,7 +383,7 @@ function AmmoStart()
             this.green = 1,
             this.blue = 1,
             this.update = function () {
-                perlinBall.material.color = new THREE.Color(controls.red,controls.green,controls.blue);
+                perlinBall.material.uniforms.color = new THREE.Vector3(controls.red,controls.green,controls.blue);
                 let deltaTime = clock.getDelta();
                 updatePhysicsUniverse( deltaTime );
                 renderer.render( scene, camera );
@@ -379,9 +392,12 @@ function AmmoStart()
             };
 
         var gui = new GUI();
-        gui.add(controls, 'red', 0, 1).onChange(controls.update);
-        gui.add(controls, 'green', 0, 1).onChange(controls.update);
-        gui.add(controls, 'blue', 0, 1).onChange(controls.update);
+        let perlinFolder = gui.addFolder('Perlin ball Controls');
+        perlinFolder.add(controls, 'red', 0, 1).onChange(controls.update);
+        perlinFolder.add(controls, 'green', 0, 1).onChange(controls.update);
+        perlinFolder.add(controls, 'blue', 0, 1).onChange(controls.update);
+        perlinFolder.close();
+        gui.addFolder('Bump map ball controls');
 
         scene.add(Globe);
         scene.add(mapFloor);
