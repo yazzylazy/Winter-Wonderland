@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import Ammo from "ammojs3";
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GUI } from "dat.gui";
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
@@ -6,13 +7,12 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@latest/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
-import Ammo from "ammojs3";
+import {readShaderFile, onReadShader, bumpMaterial} from "./shader.js";
+import {initPhysicsUniverse,updatePhysicsUniverse,convertToPhysics} from "./ammo.js";
 
-// AMMO JS VARIABLES
-var physicsUniverse = undefined;
-var rigidBody_List = new Array(); // array of rigidbodies
-var tmpTransformation = undefined; // temporarily stores transformation
+// AMMO JS VARIABLE
 const ammo = await new Ammo();
+export var tmpTransformation = undefined; // temporarily stores transformation
 
 // Snowflake variables
 let particles; // snow flake
@@ -88,6 +88,10 @@ function initGraphicsUniverse() {
     // adding a point light
     const light = new THREE.PointLight( new THREE.Color("#fffeed").convertSRGBToLinear().convertSRGBToLinear(),200,300); // convert color of the light so renderer understands
     light.position.set(10,20,10);
+
+    // adding a point light towards perlin and bump mapping balls
+    const lightBalls = new THREE.PointLight( new THREE.Color("#fffeed").convertSRGBToLinear().convertSRGBToLinear(),200,300); // convert color of the light so renderer understands
+    lightBalls.position.set(35,10,0);
    
 
     // make sure the light can cast shadows
@@ -99,6 +103,7 @@ function initGraphicsUniverse() {
 
     // add the light to our scene
     scene.add(light);
+    scene.add(lightBalls);
 
     // set orbit controls to always look at origin
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -108,93 +113,16 @@ function initGraphicsUniverse() {
 }
 
 
-// function made to initialize our dynamic universe
-function initPhysicsUniverse()
-{
-    var collisionConfiguration  = new ammo.btDefaultCollisionConfiguration();
-    var dispatcher              = new ammo.btCollisionDispatcher(collisionConfiguration);
-    var overlappingPairCache    = new ammo.btDbvtBroadphase();
-    var solver                  = new ammo.btSequentialImpulseConstraintSolver();
-    physicsUniverse             = new ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-    physicsUniverse.setGravity(new ammo.btVector3(0, -75, 0));
-}
-
-function updatePhysicsUniverse( deltaTime )
-{
-    physicsUniverse.stepSimulation( deltaTime, 10 );
-    //console.log(rigidBody_List);
-    for ( let i = 0; i < rigidBody_List.length; i++ ){
-        let Graphics_Obj = rigidBody_List[ i ];
-        //console.log(Graphics_Obj);
-        let Physics_Obj = Graphics_Obj.userData.physicsBody;
-
-        var tmpTransformation     = undefined;
-        tmpTransformation = new ammo.btTransform();
-
-        let motionState = Physics_Obj.getMotionState();
-        if ( motionState ){
-            motionState.getWorldTransform( tmpTransformation );
-            let new_pos = tmpTransformation.getOrigin();
-            let new_qua = tmpTransformation.getRotation();
-            Graphics_Obj.position.set( new_pos.x(), new_pos.y(), new_pos.z() );
-            Graphics_Obj.quaternion.set( new_qua.x(), new_qua.y(), new_qua.z(), new_qua.w() );
-        }
-    } 
-}
-
-// take a three.js mesh and convert it into a a physical object using ammo.js
-function convertToPhysics(object, position, mass, rot_quaternion,sphere,radius,height)
-{
-    let quaternion = undefined;
-    if(rot_quaternion == null)
-    {
-        quaternion = {x: 0, y: 0, z: 0, w:  1};
-    }
-    else
-    {
-      quaternion = rot_quaternion;
-    }
-
-
-    // ------ Physics Universe - ammo.js ------
-    let transform = new ammo.btTransform();
-    transform.setIdentity();
-    transform.setOrigin( new ammo.btVector3( position.x, position.y, position.z ) );
-    transform.setRotation( new ammo.btQuaternion( quaternion.x, quaternion.y, quaternion.z, quaternion.w ) );
-    let defaultMotionState = new ammo.btDefaultMotionState( transform );
-
-    let structColShape;
- 
-    // geometric structure of collision of our object
-    if(sphere){
-        structColShape = new ammo.btSphereShape( radius  );
-        structColShape.setMargin( 0.05 );
-    }
-    else{
-        structColShape = new ammo.btCylinderShape( new ammo.btVector3( radius, height * 0.5, radius ) );
-        structColShape.setMargin( 0.05 );
-    }
-    
-
-    // initial inertia
-    let localInertia = new ammo.btVector3( 0, 0, 0 );
-    structColShape.calculateLocalInertia( mass, localInertia );
-
-    //create our rigid body
-    let RBody_Info = new ammo.btRigidBodyConstructionInfo( mass, defaultMotionState, structColShape, localInertia );
-    let RBody = new ammo.btRigidBody( RBody_Info );
-
-    // add to our physics universe
-    physicsUniverse.addRigidBody( RBody );
-    // define the cube as userData.physicsBody
-    object.userData.physicsBody = RBody;
-    // add cube to the list
-    rigidBody_List.push(object);
-}
-
 
 // entry point
-function AmmoStart()
+function main(){
+    // Read shader from file
+  readShaderFile('shader/bump.vs', 'v');
+  readShaderFile('shader/bump.fs', 'f');
+}
+
+
+export function AmmoStart(vs_source,fs_source)
 {   
     tmpTransformation = new ammo.btTransform();
 
@@ -365,6 +293,7 @@ function AmmoStart()
           fragmentShader: document.getElementById( 'fragmentShader' ).textContent
       } );
 
+        // perlin texture and displkcement on a sphere
         let perlinBall = new THREE.Mesh(
             new THREE.SphereGeometry(1, 50,50),
             material
@@ -372,6 +301,14 @@ function AmmoStart()
         perlinBall.position.set(2,30,0);
         convertToPhysics(perlinBall,new THREE.Vector3(2,30,0),1,null,true,1,0); 
 
+        // procedural bump mapping on a sphere
+        var geometry = new THREE.SphereGeometry( 1, 32, 32 );
+       
+        var bm = bumpMaterial(vs_source,fs_source);
+        var bumpMapBall = new THREE.Mesh( geometry, bm );
+        bumpMapBall.position.set(2,100,0);
+        convertToPhysics(bumpMapBall,new THREE.Vector3(2,100,0),1,null,true,1,0); 
+       
 
         // add a cylinder for the floor around the entire mesh
         let outerFloorMesh = new THREE.Mesh(
@@ -390,11 +327,29 @@ function AmmoStart()
 
         // dat.gui controls
         var controls = new function () {
+            this.speed = -10;
+            this.surf_color = [ Math.trunc(255*bm.uniforms.SurfColor.value.r),
+            Math.trunc(255*bm.uniforms.SurfColor.value.g),
+			Math.trunc(255*bm.uniforms.SurfColor.value.b)]
+            this.bumpDensity = bm.uniforms.BumpDensity.value;
+            this.bumpSize = bm.uniforms.BumpSize.value;
+            this.specularFactor = bm.uniforms.SpecularFactor.value;
             this.red = 1,
             this.green = 1,
             this.blue = 1,
             this.update = function () {
                 perlinBall.material.uniforms.color = new THREE.Vector3(controls.red,controls.green,controls.blue);
+                
+                if(controls.surf_color) {
+                    bm.uniforms.SurfColor.value.r = controls.surf_color[0]/255.0;
+                    bm.uniforms.SurfColor.value.g = controls.surf_color[1]/255.0;
+                    bm.uniforms.SurfColor.value.b = controls.surf_color[2]/255.0;
+                  }
+                // Add changing other uniforms
+                bm.uniforms.BumpDensity.value = controls.bumpDensity;
+                bm.uniforms.BumpSize.value = controls.bumpSize;
+                bm.uniforms.SpecularFactor.value = controls.specularFactor;
+
                 let deltaTime = clock.getDelta();
                 updatePhysicsUniverse( deltaTime );
                 renderer.render( scene, camera );
@@ -408,7 +363,12 @@ function AmmoStart()
         perlinFolder.add(controls, 'green', 0, 1).onChange(controls.update);
         perlinFolder.add(controls, 'blue', 0, 1).onChange(controls.update);
         perlinFolder.close();
-        gui.addFolder('Bump map ball controls');
+        let bumpMapFolder = gui.addFolder('Bump map ball controls');
+        bumpMapFolder.add(controls, 'speed', -15, -1).onChange(controls.redraw);
+        bumpMapFolder.addColor(controls, 'surf_color').onChange(controls.update);
+        bumpMapFolder.add(controls, 'bumpDensity', 1, 50.0).onChange(controls.update);
+        bumpMapFolder.add(controls, 'bumpSize', 0.0, 0.5).onChange(controls.update);
+        bumpMapFolder.add(controls, 'specularFactor', 0.0, 1.0).onChange(controls.update);
 
         scene.add(Globe);
         scene.add(mapFloor);
@@ -418,6 +378,7 @@ function AmmoStart()
         scene.add(outerFloorMesh);
         scene.add(stoneMesh,iceMesh,snowMesh,snow2Mesh,snowMossMesh);
         scene.add(perlinBall);
+        scene.add(bumpMapBall);
         
         
         render();
@@ -427,7 +388,8 @@ function AmmoStart()
     
 }
 
-Ammo().then(AmmoStart);
+// start program
+main()
 
 function render()
 {
