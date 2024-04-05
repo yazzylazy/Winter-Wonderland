@@ -24,7 +24,7 @@ const numberSnowFlakes = 500; // number of snowFlakes
 const maxRange = 400, minRange = maxRange/2; // flakes are places from -200 to 200 on x and z axis
 const minHeight = -50; // flakes are places from -50 to 50 on y axis
 
-
+let snowFlakeCounter = 0; //in order to render snowflakes once
 const snowFlakeGeo = new THREE.BufferGeometry(); // stores our snow flake geomerty
 
 // initalize environment mapping variable
@@ -211,7 +211,7 @@ function AmmoStart()
             container: new THREE.TextureLoader().load("assets/houseFloor.jpg"),
             wood: new THREE.TextureLoader().load("assets/wood.jpg"),
             glass: new THREE.TextureLoader().load("assets/glass.jpg"),
-            snowFlake: new THREE.TextureLoader().load("images/snowflake2.jpg")
+            snowFlake: new THREE.TextureLoader().load("images/snowflake-emoji.png")
         };
         
         const simplex = new SimplexNoise(); // optional seed as a string parameter
@@ -341,9 +341,9 @@ function AmmoStart()
 
         let perlinBall = new THREE.Mesh(
             new THREE.SphereGeometry(1, 50,50),
-            // new THREE.MeshPhysicalMaterial({
-                
-            // })
+            new THREE.MeshPhysicalMaterial({
+                color: 0xffffff,
+            })
         );
         perlinBall.position.set(2,30,0);
         convertToPhysics(perlinBall,new THREE.Vector3(2,30,0),1,null,true,1,0); 
@@ -363,6 +363,25 @@ function AmmoStart()
         outerFloorMesh.position.set(0, -0.6, 0);
 
         convertToPhysics(outerFloorMesh,new THREE.Vector3(0,-0.6,0),0,null,false,100,MAX_HEIGHT * 0.1); 
+
+        // dat.gui controls
+        var controls = new function () {
+            this.red = 1,
+            this.green = 1,
+            this.blue = 1,
+            this.update = function () {
+                perlinBall.material.color = new THREE.Color(controls.red,controls.green,controls.blue);
+                let deltaTime = clock.getDelta();
+                updatePhysicsUniverse( deltaTime );
+                renderer.render( scene, camera );
+                
+            };
+            };
+
+        var gui = new GUI();
+        gui.add(controls, 'red', 0, 1).onChange(controls.update);
+        gui.add(controls, 'green', 0, 1).onChange(controls.update);
+        gui.add(controls, 'blue', 0, 1).onChange(controls.update);
 
         scene.add(Globe);
         scene.add(mapFloor);
@@ -390,7 +409,7 @@ function render()
 
         updateSnowFlakes();
         //controls.update();
-                
+       
         renderer.render( scene, camera );
         requestAnimationFrame( render );
 }
