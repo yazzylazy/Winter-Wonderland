@@ -9,7 +9,7 @@ import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import {readShaderFile, onReadShader, bumpMaterial} from "./shader.js";
 import {initPhysicsUniverse,updatePhysicsUniverse,convertToPhysics} from "./ammo.js";
-import { animateLegs, animateSleigh, walkPhase } from "./animation/animation.js";
+import { animateArmsPenguin, animateLegs, animateLegsPenguin, animateSleigh, walkPhase } from "./animation/animation.js";
 
 // AMMO JS VARIABLE
 const ammo = await new Ammo();
@@ -38,6 +38,8 @@ let clock;
 let renderer;
 // initialize camera
 let camera;
+
+let pesto;
 
 let rudolph;
 
@@ -258,8 +260,8 @@ export function AmmoStart(vs_source,fs_source)
         clouds();
 
         // 2 penguins
-        penguins();
         //reindeer();
+        pesto = penguin();
         rudolph = reindeer();
         console.log(rudolph);
         //reindeerGenerate();
@@ -404,7 +406,10 @@ function render()
         updateSnowFlakes();
         //controls.update();
         if (rudolph) animateLegs(rudolph);
-        animateSleigh(rudolph);
+        if (rudolph) animateSleigh(rudolph);
+
+        if (pesto) animateArmsPenguin(pesto, clock.getElapsedTime());
+        if (pesto) animateLegsPenguin(pesto, clock.getElapsedTime());
         renderer.render( scene, camera );
         requestAnimationFrame( render );
 }
@@ -688,16 +693,16 @@ function penguin() {
     const leftWingMaterial = new THREE.MeshBasicMaterial({ color: "black" });
     const leftWing = new THREE.Mesh(leftWingGeometry, leftWingMaterial);
     leftWing.position.set(0, 0.1, 0.65); 
-    leftWing.rotation.z = -Math.PI / 2; 
-    leftWing.rotation.x = -4; 
+    leftWing.rotation.z = - Math.PI / 2; 
+    leftWing.rotation.x = - 4; 
     leftWing.name = "leftEar";
     penguin.add(leftWing);
     const rightWingGeometry = new THREE.ConeGeometry(0.3, 1.2, 8);
     const rightWingMaterial = new THREE.MeshBasicMaterial({ color: "black" });
     const rightWing = new THREE.Mesh(rightWingGeometry, rightWingMaterial);
     rightWing.position.set(0, 0.1, -0.65); 
-    rightWing.rotation.z = Math.PI / 2; 
-    rightWing.rotation.x = 4;
+    rightWing.rotation.z = - Math.PI / 2; 
+    rightWing.rotation.x = - 4;
     rightWing.name = "rightEar";
     penguin.add(rightWing);
 
@@ -716,6 +721,12 @@ function penguin() {
     rightLeg.rotation.z = Math.PI / 2;
     rightLeg.name = "rearLeg";
     penguin.add(rightLeg);
+
+    penguin.position.set(Math.random() * 20 + 23, 
+    1.2, 
+    Math.random() * 20 +23); 
+
+    scene.add(penguin);
 
     return penguin;
 }

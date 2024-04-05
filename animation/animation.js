@@ -53,7 +53,7 @@ export function animateLegsPenguin(penguin, clock) {
     penguin.getObjectByName("rearLeg").rotation.x = rearLegRotation;
 }
 
-export function animateArms(penguin, clock) {
+export function animateArmsPenguin(penguin, clock) {
     const armMovementSpeed = 5; 
     const armAmplitude = 0.3; 
 
