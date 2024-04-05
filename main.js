@@ -317,6 +317,8 @@ function AmmoStart()
 
         // 2 penguins
         penguins();
+        reindeer();
+        //reindeerGenerate();
 
         addSnowflakes(textures);
 
@@ -704,7 +706,7 @@ function penguin() {
     return penguin;
 }
 
-// generate 3 penguins
+// generate 2 penguins
 function penguins(){
     let penguin1 = penguin();
     penguin1.position.set(Math.random() * 20 + 23, 
@@ -968,6 +970,7 @@ function reindeer(){
 
     // sleigh
     const sleighGroup = new THREE.Group();
+    sleighGroup.name = "sleighGroup";
     const sleighBaseGeometry = new THREE.BoxGeometry(5, 2, 0.6);
     const sleighBaseMaterial = new THREE.MeshBasicMaterial({ color: "#7B110D" });
     const sleighBase = new THREE.Mesh(sleighBaseGeometry, sleighBaseMaterial);
@@ -1015,6 +1018,15 @@ function reindeer(){
     sleighGroup.position.set(0, -1, 0); 
     reindeer.add(sleighGroup);
 
+    reindeer.position.set(Math.random() * 20 + 23, 
+    0.75, 
+    Math.random() * 20 +23); 
+
+    scene.add(reindeer);
+
     return reindeer;
 }
+
+
+
 
