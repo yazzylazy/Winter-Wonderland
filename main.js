@@ -9,6 +9,7 @@ import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import {readShaderFile, onReadShader, bumpMaterial} from "./shader.js";
 import {initPhysicsUniverse,updatePhysicsUniverse,convertToPhysics} from "./ammo.js";
+import { animateLegs, animateSleigh, walkPhase } from "./animation/animation.js";
 
 // AMMO JS VARIABLE
 const ammo = await new Ammo();
@@ -38,6 +39,8 @@ let renderer;
 // initialize camera
 let camera;
 
+let rudolph;
+
 // constant for height of mountains
 const MAX_HEIGHT = 10;
 const SNOW_HEIGHT = MAX_HEIGHT * 0.8;
@@ -51,7 +54,7 @@ let loadedModel;
 const gltfLoader = new GLTFLoader();
 gltfLoader.load("assets/person/scene.gltf", (gltfScene) => {
     loadedModel = gltfScene;
-    console.log(loadedModel)
+    //console.log(loadedModel)
     gltfScene.scene.rotation.x = - Math.PI / 8;
     gltfScene.scene.position.y = 10;
     gltfScene.scene.scale.set(12,12,12);
@@ -256,7 +259,9 @@ export function AmmoStart(vs_source,fs_source)
 
         // 2 penguins
         penguins();
-        reindeer();
+        //reindeer();
+        rudolph = reindeer();
+        console.log(rudolph);
         //reindeerGenerate();
 
         addSnowflakes(textures);
@@ -398,7 +403,8 @@ function render()
 
         updateSnowFlakes();
         //controls.update();
-       
+        if (rudolph) animateLegs(rudolph);
+        animateSleigh(rudolph);
         renderer.render( scene, camera );
         requestAnimationFrame( render );
 }
@@ -1027,7 +1033,7 @@ function reindeer(){
     reindeer.add(sleighGroup);
 
     reindeer.position.set(Math.random() * 20 + 23, 
-    0.75, 
+    1.2, 
     Math.random() * 20 +23); 
 
     scene.add(reindeer);
