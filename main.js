@@ -39,7 +39,16 @@ let renderer;
 // initialize camera
 let camera;
 
-let pesto;
+let pesto1;
+let pesto2;
+let pesto3;
+let pesto4;
+let pesto5;
+let pesto6;
+let pesto7;
+let pesto8;
+let pesto9;
+let pesto10;
 
 let rudolph;
 
@@ -261,9 +270,19 @@ export function AmmoStart(vs_source,fs_source)
 
         // 2 penguins
         //reindeer();
-        pesto = penguin();
+        pesto1 = penguin();
+        pesto2 = penguin();
+        pesto3 = penguin();
+        pesto4 = penguin();
+        pesto5 = penguin();
+        pesto6 = penguin();
+        pesto7 = penguin();
+        pesto8 = penguin();
+        pesto9 = penguin();
+        pesto10 = penguin();
         rudolph = reindeer();
         console.log(rudolph);
+        window.addEventListener('keydown', handleKeyDown);
         //reindeerGenerate();
 
         addSnowflakes(textures);
@@ -408,8 +427,8 @@ function render()
         if (rudolph) animateLegs(rudolph);
         if (rudolph) animateSleigh(rudolph);
 
-        if (pesto) animateArmsPenguin(pesto, clock.getElapsedTime());
-        if (pesto) animateLegsPenguin(pesto, clock.getElapsedTime());
+        if (pesto1) animateArmsPenguin(pesto1, clock.getElapsedTime());
+        if (pesto1) animateLegsPenguin(pesto1, clock.getElapsedTime());
         renderer.render( scene, camera );
         requestAnimationFrame( render );
 }
@@ -721,6 +740,8 @@ function penguin() {
     rightLeg.rotation.z = Math.PI / 2;
     rightLeg.name = "rearLeg";
     penguin.add(rightLeg);
+
+    penguin.scale.set(2,2,2);
 
     penguin.position.set(Math.random() * 20 + 23, 
     1.2, 
@@ -1043,14 +1064,38 @@ function reindeer(){
     sleighGroup.position.set(0, -1, 0); 
     reindeer.add(sleighGroup);
 
+    reindeer.scale.set(3,3,3);
+
     reindeer.position.set(Math.random() * 20 + 23, 
-    1.2, 
+    2.5, 
     Math.random() * 20 +23); 
 
     scene.add(reindeer);
 
     return reindeer;
 }
+
+function handleKeyDown(event) {
+    const step = 1; 
+
+    switch (event.key) {
+        case "ArrowUp":
+            rudolph.position.z -= step;
+            break;
+        case "ArrowDown":
+            rudolph.position.z += step;
+            break;
+        case "ArrowLeft":
+            rudolph.position.x -= step;
+            rudolph.rotation.y -= step;
+            break;
+        case "ArrowRight":
+            rudolph.position.x += step;
+            rudolph.rotation.y -= step;
+            break;
+    }
+}
+
 
 
 
