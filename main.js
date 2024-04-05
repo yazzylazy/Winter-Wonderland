@@ -1,10 +1,9 @@
 import * as THREE from "three";
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FBXLoader } from 'https://unpkg.com/three@latest/examples/jsm/loaders/FBXLoader.js';
 import { GUI } from "dat.gui";
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
+import { GLTFLoader } from 'https://unpkg.com/three@latest/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import Ammo from "ammojs3";
@@ -47,6 +46,18 @@ const SNOW2_HEIGHT = MAX_HEIGHT * 0.5;
 const ICE_HEIGHT = MAX_HEIGHT * 0.3;
 const mossSNOW_HEIGHT = MAX_HEIGHT * 0.0;
 
+// Person Variables
+let loadedModel;
+const gltfLoader = new GLTFLoader();
+gltfLoader.load("assets/person/scene.gltf", (gltfScene) => {
+    loadedModel = gltfScene;
+    console.log(loadedModel)
+    gltfScene.scene.rotation.x = - Math.PI / 8;
+    gltfScene.scene.position.y = 10;
+    gltfScene.scene.scale.set(12,12,12);
+    scene.add(gltfScene.scene);
+
+});
 
 function initGraphicsUniverse() {
     // create the scene and set a background color
