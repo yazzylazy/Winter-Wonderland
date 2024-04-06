@@ -39,6 +39,7 @@ let renderer;
 // initialize camera
 let camera;
 
+// initialize animals
 let pesto1;
 let pesto2;
 let pesto3;
@@ -49,8 +50,27 @@ let pesto7;
 let pesto8;
 let pesto9;
 let pesto10;
-
 let rudolph;
+
+// fly through
+const points = [
+    new THREE.Vector3(-20, 5, 10),
+    new THREE.Vector3(-5, 10, 5),
+    new THREE.Vector3(-5, 15, 0),
+    new THREE.Vector3(-5, 10, -5),
+    new THREE.Vector3(20, 5, 10)
+];
+const curve = new THREE.CatmullRomCurve3(points);
+
+let speed = 0;
+
+const flyThroughControls = {
+    playFlyThrough: false,
+    restartFlyThrough: function() {
+        speed = 0;
+        playFlyThrough = true;
+    }
+};
 
 // constant for height of mountains
 const MAX_HEIGHT = 10;
@@ -268,8 +288,7 @@ export function AmmoStart(vs_source,fs_source)
         // and random clouds
         clouds();
 
-        // 2 penguins
-        //reindeer();
+        // penguins and reindeer
         pesto1 = penguin();
         pesto2 = penguin();
         pesto3 = penguin();
@@ -395,6 +414,9 @@ export function AmmoStart(vs_source,fs_source)
         bumpMapFolder.add(controls, 'bumpDensity', 1, 50.0).onChange(controls.update);
         bumpMapFolder.add(controls, 'bumpSize', 0.0, 0.5).onChange(controls.update);
         bumpMapFolder.add(controls, 'specularFactor', 0.0, 1.0).onChange(controls.update);
+        let flyThroughFolder = gui.addFolder('Interactive FlyThrough');
+        flyThroughFolder.add(flyThroughControls, 'playFlyThrough').name('Play/Pause').listen();
+        flyThroughFolder.add(flyThroughControls, 'restartFlyThrough').name('Restart');
 
         scene.add(Globe);
         scene.add(mapFloor);
@@ -429,6 +451,7 @@ function render()
 
         if (pesto1) animateArmsPenguin(pesto1, clock.getElapsedTime());
         if (pesto1) animateLegsPenguin(pesto1, clock.getElapsedTime());
+        flyThrough();
         renderer.render( scene, camera );
         requestAnimationFrame( render );
 }
@@ -1075,6 +1098,7 @@ function reindeer(){
     return reindeer;
 }
 
+// move reindeer with keyboard
 function handleKeyDown(event) {
     const step = 1; 
 
@@ -1093,6 +1117,20 @@ function handleKeyDown(event) {
             rudolph.position.x += step;
             rudolph.rotation.y -= step;
             break;
+    }
+}
+
+// fly-through
+function flyThrough() {
+    if (flyThroughControls.playFlyThrough) {
+        speed += 0.001;
+        if (speed > 1) speed = 0;
+
+        const position = curve.getPointAt(speed);
+        camera.position.set(position.x, position.y, position.z);
+
+        const lookAtPosition = curve.getPointAt((speed + 0.01) % 1);
+        camera.lookAt(lookAtPosition);
     }
 }
 
