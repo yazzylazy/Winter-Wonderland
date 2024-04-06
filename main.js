@@ -290,15 +290,25 @@ export function AmmoStart(vs_source,fs_source)
 
         // penguins and reindeer
         pesto1 = penguin();
+        pesto1.position.set(-10, 1.2, - 4 * 20 + 23); 
         pesto2 = penguin();
+        pesto2.position.set(-25, 1.2, - 2 * 20 +23); 
         pesto3 = penguin();
+        pesto3.position.set(40, 1.2, Math.random() * 20 +23); 
         pesto4 = penguin();
+        pesto4.position.set(50, 1.2, - 3 * 20 +23); 
         pesto5 = penguin();
+        pesto5.position.set(1, 1.2, Math.random() * 20 +23); 
         pesto6 = penguin();
+        pesto6.position.set(-6, 1.2, Math.random() * 20 +23); 
         pesto7 = penguin();
+        pesto7.position.set(-45, 1.2, - 4 * 20 +23); 
         pesto8 = penguin();
+        pesto8.position.set(7, 1.2, Math.random() * 20 +23); 
         pesto9 = penguin();
+        pesto9.position.set(-70, 1.2, Math.random() * 20 +23); 
         pesto10 = penguin();
+        pesto10.position.set(1, 1.2, Math.random() * 20 +23); 
         rudolph = reindeer();
         console.log(rudolph);
         window.addEventListener('keydown', handleKeyDown);
@@ -414,7 +424,7 @@ export function AmmoStart(vs_source,fs_source)
         bumpMapFolder.add(controls, 'bumpDensity', 1, 50.0).onChange(controls.update);
         bumpMapFolder.add(controls, 'bumpSize', 0.0, 0.5).onChange(controls.update);
         bumpMapFolder.add(controls, 'specularFactor', 0.0, 1.0).onChange(controls.update);
-        let flyThroughFolder = gui.addFolder('Interactive FlyThrough');
+        let flyThroughFolder = gui.addFolder('Fly-through the globe!');
         flyThroughFolder.add(flyThroughControls, 'playFlyThrough').name('Play/Pause').listen();
         flyThroughFolder.add(flyThroughControls, 'restartFlyThrough').name('Restart');
 
@@ -764,11 +774,9 @@ function penguin() {
     rightLeg.name = "rearLeg";
     penguin.add(rightLeg);
 
-    penguin.scale.set(2,2,2);
+    penguin.scale.set(2.5,2.5,2.5);
 
-    penguin.position.set(Math.random() * 20 + 23, 
-    1.2, 
-    Math.random() * 20 +23); 
+    penguin.rotation.y = Math.random() * Math.PI * 2;
 
     scene.add(penguin);
 
@@ -1099,26 +1107,38 @@ function reindeer(){
 }
 
 // move reindeer with keyboard
-function handleKeyDown(event) {
-    const step = 1; 
 
-    switch (event.key) {
+
+let direction;
+
+function handleKeyDown(event) {
+    const step = 1.5; 
+
+    // if direction is not set or key pressed is different from current key, update direction
+    if (!direction || (direction !== event.key && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key))) {
+        direction = event.key;
+    }
+
+    switch (direction) {
         case "ArrowUp":
-            rudolph.position.z -= step;
+            rudolph.rotation.y = Math.PI * 1.5; 
+            rudolph.position.z -= step; 
             break;
         case "ArrowDown":
-            rudolph.position.z += step;
+            rudolph.rotation.y = Math.PI * 0.5; 
+            rudolph.position.z += step; 
             break;
         case "ArrowLeft":
-            rudolph.position.x -= step;
-            rudolph.rotation.y -= step;
+            rudolph.rotation.y = 0; 
+            rudolph.position.x -= step; 
             break;
         case "ArrowRight":
+            rudolph.rotation.y = Math.PI; 
             rudolph.position.x += step;
-            rudolph.rotation.y -= step;
             break;
     }
 }
+
 
 // fly-through
 function flyThrough() {
