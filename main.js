@@ -85,10 +85,21 @@ let loadedModel;
 const gltfLoader = new GLTFLoader();
 gltfLoader.load("assets/person/scene.gltf", (gltfScene) => {
     loadedModel = gltfScene;
-    //console.log(loadedModel)
     gltfScene.scene.rotation.x = - Math.PI / 8;
     gltfScene.scene.position.y = 10;
     gltfScene.scene.scale.set(12,12,12);
+    scene.add(gltfScene.scene);
+
+});
+
+// Speech Bubble Variables
+let loadedModelTwo;
+const gltfLoaderTwo = new GLTFLoader();
+gltfLoaderTwo.load("assets/speech_bubble_02/scene.gltf", (gltfScene) => {
+    loadedModelTwo = gltfScene;
+    gltfScene.scene.position.x = -5;
+    gltfScene.scene.position.y = 18;
+    gltfScene.scene.scale.set(0.01,0.01,0.01);
     scene.add(gltfScene.scene);
 
 });
