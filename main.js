@@ -1106,6 +1106,19 @@ function reindeer(){
     sleighGroup.position.set(0, -1, 0); 
     reindeer.add(sleighGroup);
 
+    // Exclamation mark Variables
+    let loadedModelThree;
+    const gltfLoaderThree = new GLTFLoader();
+    gltfLoaderThree.load("assets/exclamation_bubble/scene.gltf", (gltfScene) => {
+        loadedModelThree = gltfScene;
+        gltfScene.scene.position.x = -1;
+        gltfScene.scene.position.y = 2.7;
+        gltfScene.scene.position.z = 0.9;
+        gltfScene.scene.rotation.y = Math.PI / 2;
+        gltfScene.scene.scale.set(0.3,0.3,0.3);
+        reindeer.add(gltfScene.scene);
+    });
+
     reindeer.scale.set(3,3,3);
 
     reindeer.position.set(Math.random() * 20 + 23, 
