@@ -57,8 +57,8 @@ const points = [
     new THREE.Vector3(-20, 5, 10),
     new THREE.Vector3(-5, 10, 5),
     new THREE.Vector3(-5, 15, 0),
-    new THREE.Vector3(-5, 10, -5),
-    new THREE.Vector3(20, 5, 10)
+    new THREE.Vector3(-5, 15, -5),
+    new THREE.Vector3(20, 15, 10)
 ];
 const curve = new THREE.CatmullRomCurve3(points);
 
