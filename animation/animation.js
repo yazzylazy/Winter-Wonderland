@@ -44,13 +44,19 @@ export function animateSleigh(reindeer) {
 // animation penguin
 export function animateLegsPenguin(penguin, clock) {
     const legMovementSpeed = 5; 
-    const legAmplitude = 0.2; 
+    const legAmplitude = 0.5; 
 
     const frontLegRotation = Math.sin(clock * legMovementSpeed) * legAmplitude;
     const rearLegRotation = Math.sin(clock * legMovementSpeed + Math.PI) * legAmplitude;
 
-    penguin.getObjectByName("frontLeg").rotation.x = frontLegRotation;
-    penguin.getObjectByName("rearLeg").rotation.x = rearLegRotation;
+    penguin.getObjectByName("frontLeg").rotation.y = frontLegRotation;
+    penguin.getObjectByName("rearLeg").rotation.y = rearLegRotation;
+
+    // turn in a circle
+    const speed = 0.3; 
+    const angle = (clock * speed);
+    penguin.rotation.y = angle - Math.PI / 2;
+
 }
 
 export function animateArmsPenguin(penguin, clock) {

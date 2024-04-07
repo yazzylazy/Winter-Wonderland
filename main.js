@@ -305,25 +305,25 @@ export function AmmoStart(vs_source,fs_source)
 
         // penguins and reindeer
         pesto1 = penguin();
-        pesto1.position.set(-10, 1.2, - 4 * 20 + 23); 
+        pesto1.position.set(-10, 2.5, - 4 * 20 + 23); 
         pesto2 = penguin();
-        pesto2.position.set(-25, 1.2, - 2 * 20 +23); 
+        pesto2.position.set(-25, 2.5, - 2 * 20 +23); 
         pesto3 = penguin();
-        pesto3.position.set(40, 1.2, Math.random() * 20 +23); 
+        pesto3.position.set(40, 2.5, Math.random() * 20 +23); 
         pesto4 = penguin();
-        pesto4.position.set(50, 1.2, - 3 * 20 +23); 
+        pesto4.position.set(50, 2.5, - 3 * 20 +23); 
         pesto5 = penguin();
-        pesto5.position.set(1, 1.2, Math.random() * 20 +23); 
+        pesto5.position.set(1, 2.5, Math.random() * 20 +23); 
         pesto6 = penguin();
-        pesto6.position.set(-6, 1.2, Math.random() * 20 +23); 
+        pesto6.position.set(-6, 2.5, Math.random() * 20 +23); 
         pesto7 = penguin();
-        pesto7.position.set(-45, 1.2, - 4 * 20 +23); 
+        pesto7.position.set(-45, 2.5, - 4 * 20 +23); 
         pesto8 = penguin();
-        pesto8.position.set(7, 1.2, Math.random() * 20 +23); 
+        pesto8.position.set(7, 2.5, Math.random() * 20 +23); 
         pesto9 = penguin();
-        pesto9.position.set(-70, 1.2, Math.random() * 20 +23); 
+        pesto9.position.set(-70, 2.5, Math.random() * 20 +23); 
         pesto10 = penguin();
-        pesto10.position.set(1, 1.2, Math.random() * 20 +23); 
+        pesto10.position.set(1, 2.5, Math.random() * 20 +23); 
         rudolph = reindeer();
         console.log(rudolph);
         window.addEventListener('keydown', handleKeyDown);
@@ -479,6 +479,24 @@ function render()
 
         if (pesto1) animateArmsPenguin(pesto1, clock.getElapsedTime());
         if (pesto1) animateLegsPenguin(pesto1, clock.getElapsedTime());
+        if (pesto2) animateArmsPenguin(pesto2, clock.getElapsedTime());
+        if (pesto2) animateLegsPenguin(pesto2, clock.getElapsedTime());
+        if (pesto3) animateArmsPenguin(pesto3, clock.getElapsedTime());
+        if (pesto3) animateLegsPenguin(pesto3, clock.getElapsedTime());
+        if (pesto4) animateArmsPenguin(pesto4, clock.getElapsedTime());
+        if (pesto4) animateLegsPenguin(pesto4, clock.getElapsedTime());
+        if (pesto5) animateArmsPenguin(pesto5, clock.getElapsedTime());
+        if (pesto5) animateLegsPenguin(pesto5, clock.getElapsedTime());
+        if (pesto6) animateArmsPenguin(pesto6, clock.getElapsedTime());
+        if (pesto6) animateLegsPenguin(pesto6, clock.getElapsedTime());
+        if (pesto7) animateArmsPenguin(pesto7, clock.getElapsedTime());
+        if (pesto7) animateLegsPenguin(pesto7, clock.getElapsedTime());
+        if (pesto8) animateArmsPenguin(pesto8, clock.getElapsedTime());
+        if (pesto8) animateLegsPenguin(pesto8, clock.getElapsedTime());
+        if (pesto9) animateArmsPenguin(pesto9, clock.getElapsedTime());
+        if (pesto9) animateLegsPenguin(pesto9, clock.getElapsedTime());
+        if (pesto10) animateArmsPenguin(pesto10, clock.getElapsedTime());
+        if (pesto10) animateLegsPenguin(pesto10, clock.getElapsedTime());
         flyThrough();
 
         // rudolph POV
@@ -778,17 +796,17 @@ function penguin() {
     const leftWingGeometry = new THREE.ConeGeometry(0.3, 1.2, 8);
     const leftWingMaterial = new THREE.MeshBasicMaterial({ color: "black" });
     const leftWing = new THREE.Mesh(leftWingGeometry, leftWingMaterial);
-    leftWing.position.set(0, 0.1, 0.65); 
+    leftWing.position.set(-0.3, 0.1, 0.65); 
     leftWing.rotation.z = - Math.PI / 2; 
-    leftWing.rotation.x = - 4; 
+    leftWing.rotation.y = 4; 
     leftWing.name = "leftEar";
     penguin.add(leftWing);
     const rightWingGeometry = new THREE.ConeGeometry(0.3, 1.2, 8);
     const rightWingMaterial = new THREE.MeshBasicMaterial({ color: "black" });
     const rightWing = new THREE.Mesh(rightWingGeometry, rightWingMaterial);
-    rightWing.position.set(0, 0.1, -0.65); 
+    rightWing.position.set(-0.3, 0.1, -0.65); 
     rightWing.rotation.z = - Math.PI / 2; 
-    rightWing.rotation.x = - 4;
+    rightWing.rotation.y = - 4;
     rightWing.name = "rightEar";
     penguin.add(rightWing);
 
@@ -815,21 +833,6 @@ function penguin() {
     scene.add(penguin);
 
     return penguin;
-}
-
-// generate 2 penguins
-function penguins(){
-    let penguin1 = penguin();
-    penguin1.position.set(Math.random() * 20 + 23, 
-    0.75, 
-    Math.random() * 20 +23); 
-    scene.add(penguin1);
-
-    let penguin2 = penguin();
-    penguin2.position.set(Math.random() * 20 +23, 
-    0.75, 
-    -Math.random() * 20 +23); 
-    scene.add(penguin2);
 }
 
 function reindeer(){
