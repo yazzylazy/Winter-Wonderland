@@ -416,6 +416,16 @@ export function AmmoStart(vs_source,fs_source,vs_source_cube,fs_source_cube)
         present13.position.set(-80, 2.5, 0);
         let present14 = gifts();
         present14.position.set(0, 2.5, -50);
+        let present15 = gifts();
+        present15.position.set(0, 2.5, -80);
+        let present16 = gifts();
+        present16.position.set(0, 2.5, 80);
+        let present17 = gifts();
+        present17.position.set(-20, 2.5, 80);
+        let present18 = gifts();
+        present18.position.set(20, 2.5, -70);
+        let present19 = gifts();
+        present19.position.set(30, 2.5, -50);
         console.log(rudolph);
         window.addEventListener('keydown', handleKeyDown);
         //reindeerGenerate();
