@@ -76,6 +76,16 @@ const reindeerPOVControls = {
     enablePOV : false,
 };
 
+const perlinControls = {
+    enablePerlin : false,
+};
+
+// perlin ball material
+let PerlinMaterial;
+let start = Date.now();
+let globeMaterial;
+let Globe; // globe mesh
+
 // constant for height of mountains
 const MAX_HEIGHT = 10;
 const SNOW_HEIGHT = MAX_HEIGHT * 0.8;
@@ -331,24 +341,26 @@ export function AmmoStart(vs_source,fs_source)
 
         addSnowflakes(textures);
 
+        globeMaterial = new THREE.MeshPhysicalMaterial({
+            metalness: 0,
+            roughness: 0,
+            transmission: 1,
+            ior: 1.7,
+            clearcoat: 1.0,
+            thickness: 0.5,
+            transparent: true,
+            opacity: 0.2
+        });
+
          // create a snowy transperent mesh encapuslating all bottom hexagons
-        let Globe = new THREE.Mesh(
+        Globe = new THREE.Mesh(
             new THREE.SphereGeometry(21, 50, 50,0,Math.PI * 2,0,1.57),
-            new THREE.MeshPhysicalMaterial({
-                metalness: 0,
-                roughness: 0,
-                transmission: 1,
-                ior: 1.7,
-                clearcoat: 1.0,
-                thickness: 0.5,
-                transparent: true,
-                opacity: 0.2
-            })
+            globeMaterial,
         );
         Globe.receiveShadow = true;
         convertToPhysics(Globe,new THREE.Vector3(0,0,0),0,null,true,21,0); 
 
-        let material = new THREE.ShaderMaterial( {
+        PerlinMaterial = new THREE.ShaderMaterial( {
             uniforms: { 
               time: { // float initialized to 0
                   type: "f", 
@@ -357,6 +369,10 @@ export function AmmoStart(vs_source,fs_source)
               colors: { // float initialized to 0
                 type: "f", 
                 value: new THREE.Vector3(1,1,1)
+            },
+            turbulences: { // float initialized to 0
+                type: "f", 
+                value: -0.5,
             }
           },
           vertexShader: document.getElementById( 'vertexShader' ).textContent,
@@ -364,12 +380,12 @@ export function AmmoStart(vs_source,fs_source)
       } );
 
         // perlin texture and displkcement on a sphere
-        let perlinBall = new THREE.Mesh(
-            new THREE.SphereGeometry(1, 50,50),
-            material
-        );
-        perlinBall.position.set(2,30,0);
-        convertToPhysics(perlinBall,new THREE.Vector3(2,30,0),1,null,true,1,0); 
+        // let perlinBall = new THREE.Mesh(
+        //     new THREE.SphereGeometry(1, 50,50),
+        //     PerlinMaterial
+        // );
+        // perlinBall.position.set(2,30,0);
+        // convertToPhysics(perlinBall,new THREE.Vector3(2,30,0),1,null,true,1,0); 
 
         // procedural bump mapping on a sphere
         var geometry = new THREE.SphereGeometry( 1, 32, 32 );
@@ -407,8 +423,10 @@ export function AmmoStart(vs_source,fs_source)
             this.red = 1,
             this.green = 1,
             this.blue = 1,
+            this.turbulence = -0.5,
             this.update = function () {
-                perlinBall.material.uniforms.color = new THREE.Vector3(controls.red,controls.green,controls.blue);
+                Globe.material.uniforms.colors.value = new THREE.Vector3(controls.red,controls.green,controls.blue);
+                Globe.material.uniforms.turbulences.value = controls.turbulence;
                 
                 if(controls.surf_color) {
                     bm.uniforms.SurfColor.value.r = controls.surf_color[0]/255.0;
@@ -432,6 +450,10 @@ export function AmmoStart(vs_source,fs_source)
         perlinFolder.add(controls, 'red', 0, 1).onChange(controls.update);
         perlinFolder.add(controls, 'green', 0, 1).onChange(controls.update);
         perlinFolder.add(controls, 'blue', 0, 1).onChange(controls.update);
+        perlinFolder.add(controls, 'turbulence', -0.5, 0.5).onChange(controls.update);
+        gui.add(perlinControls, 'enablePerlin').name('Perlin Demo').onChange(function(value){
+            perlinToggle(value);
+        });
         perlinFolder.close();
         let bumpMapFolder = gui.addFolder('Bump map ball controls');
         bumpMapFolder.add(controls, 'speed', -15, -1).onChange(controls.redraw);
@@ -453,7 +475,7 @@ export function AmmoStart(vs_source,fs_source)
         scene.add(snowFloorMesh);
         scene.add(outerFloorMesh);
         scene.add(stoneMesh,iceMesh,snowMesh,snow2Mesh,snowMossMesh);
-        scene.add(perlinBall);
+        //scene.add(perlinBall);
         scene.add(bumpMapBall);
         
         
@@ -471,6 +493,8 @@ function render()
 {
         let deltaTime = clock.getDelta();
         updatePhysicsUniverse( deltaTime );
+
+        PerlinMaterial.uniforms[ 'time' ].value = .00025 * ( Date.now() - start );
 
         updateSnowFlakes();
         //controls.update();
@@ -1216,6 +1240,16 @@ function rudolphToggle(enablePOV) {
         // restore
         camera.position.copy(ogPosition);
         camera.rotation.copy(ogRotation);
+    }
+}
+
+function perlinToggle(enablePerlin) {
+    if (enablePerlin) {
+        // swtich material to custom perlin shader
+        Globe.material = PerlinMaterial;
+    } else {
+        // swtich material to globe physical material
+        Globe.material = globeMaterial;
     }
 }
 

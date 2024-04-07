@@ -26,6 +26,7 @@
   varying vec2 vUv;
   varying float noise;
   uniform float time;
+  uniform float turbulences;
     
     vec3 mod289(vec3 x)
   {
@@ -193,7 +194,7 @@
   
   float turbulence( vec3 p ) {
       float w = 100.0;
-      float t = -.5;
+      float t = turbulences;
       for (float f = 1.0 ; f <= 10.0 ; f++ ){
           float power = pow( 2.0, f );
           t += abs( pnoise( vec3( power * p ), vec3( 10.0, 10.0, 10.0 ) ) / power );
@@ -206,11 +207,11 @@
       vUv = uv;
   
       // add time to the noise parameters so it's animated
-      noise = 10.0 *  -.10 * turbulence( .5 * normal + time );
+      noise = 10.0 *  -.10 * turbulence( .5 * normal + time );  // change normal to a uniform value we can change
       float b = 5.0 * pnoise( 0.05 * position + vec3( 2.0 * time ), vec3( 100.0 ) );
       float displacement = - noise + b;
       
-      vec3 newPosition = position + normal * displacement;
+      vec3 newPosition = position + normal; //* displacement;
       gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
   
   }
@@ -219,13 +220,14 @@
   <script type="x-shader/x-vertex" id="fragmentShader">
   varying vec2 vUv;
   varying float noise;
+  uniform vec3 colors;
   
   void main() {
   
       // compose the colour using the UV coordinate
       // and modulate it with the noise like ambient occlusion
-      vec3 color = vec3( vUv * ( 1. - 2. * noise ), 0.0 );
-      gl_FragColor = vec4( color.rgb, 1.0 );
+      vec3 color = colors * vec3( vUv * ( 1. - 2. * noise ), 1.0 );
+      gl_FragColor = vec4( color, 1.0 );
   
   }
   </script>
