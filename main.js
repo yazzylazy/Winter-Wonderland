@@ -236,21 +236,21 @@ export function AmmoStart(vs_source,fs_source,vs_source_cube,fs_source_cube)
         ];
 
         const textureCube2 = [
-            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/back.png") } ),
-            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/front.png") } ),
-            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/top.png") } ),
-            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/bottom.png") } ),
             new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/left.png") } ),
             new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/right.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/top.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/bottom.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/front.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/back.png") } ),
         ];
 
         const textureCube3 = [
-            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/back.png") } ),
-            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/front.png") } ),
-            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/top.png") } ),
-            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/bottom.png") } ),
             new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/left.png") } ),
             new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/right.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/top.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/bottom.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/front.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/back.png") } ),
         ];
 
         let textures = {
