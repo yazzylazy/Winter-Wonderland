@@ -410,6 +410,7 @@ export function AmmoStart(vs_source,fs_source,vs_source_cube,fs_source_cube)
         // physics
         let present11 = gifts();
         present11.position.set(50, 2.5, 0);
+        convertToPhysics(present11,new THREE.Vector3(50,2.5,0),0,null,false,4,8);
         let present12 = gifts();
         present12.position.set(-50, 2.5, 0);
         let present13 = gifts();
