@@ -72,6 +72,10 @@ const flyThroughControls = {
     }
 };
 
+const reindeerPOVControls = {
+    enablePOV : false,
+};
+
 // constant for height of mountains
 const MAX_HEIGHT = 10;
 const SNOW_HEIGHT = MAX_HEIGHT * 0.8;
@@ -438,6 +442,9 @@ export function AmmoStart(vs_source,fs_source)
         let flyThroughFolder = gui.addFolder('Fly-through the globe!');
         flyThroughFolder.add(flyThroughControls, 'playFlyThrough').name('Play/Pause').listen();
         flyThroughFolder.add(flyThroughControls, 'restartFlyThrough').name('Restart');
+        gui.add(reindeerPOVControls, 'enablePOV').name('Rudolph POV').onChange(function(value){
+            rudolphToggle(value);
+        });
 
         scene.add(Globe);
         scene.add(mapFloor);
@@ -473,6 +480,22 @@ function render()
         if (pesto1) animateArmsPenguin(pesto1, clock.getElapsedTime());
         if (pesto1) animateLegsPenguin(pesto1, clock.getElapsedTime());
         flyThrough();
+
+        // rudolph POV
+        if (reindeerPOVControls.enablePOV) {
+            const nose = rudolph.getObjectByName("nose");
+            if (nose) {
+                const reindeerNosePosition = new THREE.Vector3();
+                nose.getWorldPosition(reindeerNosePosition);
+                camera.position.copy(reindeerNosePosition);
+                camera.quaternion.copy(rudolph.quaternion);
+
+                // rotate 90 degrees so rudolph faces the right way when moving
+                camera.rotateY(Math.PI / 2);
+            }
+        }
+
+
         renderer.render( scene, camera );
         requestAnimationFrame( render );
 }
@@ -1177,6 +1200,22 @@ function flyThrough() {
         camera.lookAt(lookAtPosition);
     }
 }
+
+let ogPosition = new THREE.Vector3();
+let ogRotation = new THREE.Euler();
+
+function rudolphToggle(enablePOV) {
+    if (enablePOV) {
+        // store the current camera position and rotation to restore
+        ogPosition.copy(camera.position);
+        ogRotation.copy(camera.rotation);
+    } else {
+        // restore
+        camera.position.copy(ogPosition);
+        camera.rotation.copy(ogRotation);
+    }
+}
+
 
 
 
