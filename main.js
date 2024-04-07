@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import WebGL from 'three/addons/capabilities/WebGL.js';
 import Ammo from "ammojs3";
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GUI } from "dat.gui";
@@ -10,6 +11,7 @@ import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import {readShaderFile, onReadShader, bumpMaterial} from "./shader.js";
 import {initPhysicsUniverse,updatePhysicsUniverse,convertToPhysics} from "./ammo.js";
 import { animateArmsPenguin, animateLegs, animateLegsPenguin, animateSleigh, walkPhase } from "./animation/animation.js";
+import { BoxShape } from "./box.js";
 
 // AMMO JS VARIABLE
 const ammo = await new Ammo();
@@ -38,6 +40,10 @@ let clock;
 let renderer;
 // initialize camera
 let camera;
+
+// load models 
+let loadedModel;
+let loadedModelTwo;
 
 // initialize animals
 let pesto1;
@@ -86,6 +92,11 @@ let start = Date.now();
 let globeMaterial;
 let Globe; // globe mesh
 
+// cube mappig 
+var VAO; // vertex attribute object for cube mapping texture
+var img2DSampler;
+let gl;
+
 // constant for height of mountains
 const MAX_HEIGHT = 10;
 const SNOW_HEIGHT = MAX_HEIGHT * 0.8;
@@ -93,30 +104,6 @@ const snowSTONE_HEIGHT = MAX_HEIGHT * 0.7;
 const SNOW2_HEIGHT = MAX_HEIGHT * 0.5;
 const ICE_HEIGHT = MAX_HEIGHT * 0.3;
 const mossSNOW_HEIGHT = MAX_HEIGHT * 0.0;
-
-// Person Variables
-let loadedModel;
-const gltfLoader = new GLTFLoader();
-gltfLoader.load("assets/person/scene.gltf", (gltfScene) => {
-    loadedModel = gltfScene;
-    gltfScene.scene.rotation.x = - Math.PI / 8;
-    gltfScene.scene.position.y = 10;
-    gltfScene.scene.scale.set(12,12,12);
-    scene.add(gltfScene.scene);
-
-});
-
-// Speech Bubble Variables
-let loadedModelTwo;
-const gltfLoaderTwo = new GLTFLoader();
-gltfLoaderTwo.load("assets/speech_bubble_02/scene.gltf", (gltfScene) => {
-    loadedModelTwo = gltfScene;
-    gltfScene.scene.position.x = -5;
-    gltfScene.scene.position.y = 18;
-    gltfScene.scene.scale.set(0.01,0.01,0.01);
-    scene.add(gltfScene.scene);
-
-});
 
 function initGraphicsUniverse() {
     // create the scene and set a background color
@@ -169,24 +156,61 @@ function initGraphicsUniverse() {
     controls.target.set(0,0,0);
     controls.dampingFactor = 0.05;
     controls.enableDamping = true;
+
+    // Person Variables
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load("assets/person/scene.gltf", (gltfScene) => {
+        loadedModel = gltfScene;
+        gltfScene.scene.rotation.x = - Math.PI / 8;
+        gltfScene.scene.position.y = 10;
+        gltfScene.scene.scale.set(12,12,12);
+        scene.add(gltfScene.scene);
+
+    });
+
+    // Speech Bubble Variables
+    const gltfLoaderTwo = new GLTFLoader();
+    gltfLoaderTwo.load("assets/speech_bubble_02/scene.gltf", (gltfScene) => {
+        loadedModelTwo = gltfScene;
+        gltfScene.scene.position.x = -5;
+        gltfScene.scene.position.y = 18;
+        gltfScene.scene.scale.set(0.01,0.01,0.01);
+        scene.add(gltfScene.scene);
+
+    });
+
+    
 }
 
 
 
 // entry point
 function main(){
+
+    if (WebGL.isWebGLAvailable() === false) {
+        // if not print error on console and exit
+        document.body.appendChild(WebGL.getWebGLErrorMessage());
+    }
+
     // Read shader from file
-  readShaderFile('shader/bump.vs', 'v');
-  readShaderFile('shader/bump.fs', 'f');
+    readShaderFile('shader/bump.vs', 'v',false);
+    readShaderFile('shader/bump.fs', 'f',false);
+    readShaderFile('shader/text_boxes.vs', 'v',true);
+    readShaderFile('shader/text_boxes.fs', 'f',true);
+
+    
 }
 
 
-export function AmmoStart(vs_source,fs_source)
+export function AmmoStart(vs_source,fs_source,vs_source_cube,fs_source_cube)
 {   
+    var box = new BoxShape();
     tmpTransformation = new ammo.btTransform();
 
     initPhysicsUniverse();
     initGraphicsUniverse();
+    //initTextures(gl);
+    //initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE);
 
     //process the environment map to use in our materials
     let pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -198,7 +222,36 @@ export function AmmoStart(vs_source,fs_source)
             envmap = pmremGenerator.fromEquirectangular(texture).texture;
             pmremGenerator.dispose();
         // Ensure the environment map is set or updated here, e.g., for your materials or scene background
-    
+        
+        //load cube texture
+        const textureLoader = new THREE.TextureLoader();
+
+        const textureCube1 = [
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box1/back.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box1/front.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box1/top.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box1/bottom.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box1/left.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box1/right.png") } ),
+        ];
+
+        const textureCube2 = [
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/back.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/front.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/top.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/bottom.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/left.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box2/right.png") } ),
+        ];
+
+        const textureCube3 = [
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/back.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/front.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/top.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/bottom.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/left.png") } ),
+            new THREE.MeshStandardMaterial( {  map: textureLoader.load("assets/box3/right.png") } ),
+        ];
 
         let textures = {
             snow2: new THREE.TextureLoader().load("assets/snow2.jpg"),
@@ -278,22 +331,25 @@ export function AmmoStart(vs_source,fs_source)
         mapContainer.position.set(0, MAX_HEIGHT * 0.0, 0);
 
         convertToPhysics(mapContainer,new THREE.Vector3(0,0,0),0,null,false,17.1,MAX_HEIGHT * 0.0); 
+        
 
-        //add another cylinder for walls around our other meshes
-        let snowBallContainer =new  THREE.Mesh(
-            new  THREE.CylinderGeometry(8, 8, MAX_HEIGHT * 1.5, 50, true),
-            new  THREE.MeshPhysicalMaterial({
-                envMap: envmap,
-                map: textures.snow,
-                envMapIntensity: 0.2, 
-                side: THREE.DoubleSide, // render both sides
-            })
-        );
-        snowBallContainer.receiveShadow = true;
-        snowBallContainer.rotation.y = -Math.PI * 0.333 * 0.5;
-        snowBallContainer.position.set(50, MAX_HEIGHT * 0, 0);
+        const cube_textures = [textureCube1,textureCube2,textureCube3]
+        
+        const presents = new THREE.Group();
 
-        convertToPhysics(snowBallContainer,new THREE.Vector3(50,0,0),0,null,false,8,MAX_HEIGHT * 1.5); 
+        for(let i=0;i<10;i++){
+            //add another mesh cubemapped to a box geo
+            let present =new  THREE.Mesh(
+                new  THREE.BoxGeometry(8, 8, 8),
+                cube_textures[randomIntFromInterval(0, 2)]
+            );
+            let x = randomIntFromInterval(50, 100);
+            let z = randomIntFromInterval(40, 100);
+            let y = 4;
+            present.position.set(x,y,z);
+            presents.add(present);
+            convertToPhysics(present,new THREE.Vector3(x,y,z),0,null,false,4,8); 
+        }       
 
         // add a cylinder for the floor around the entire mesh
         let mapFloor = new THREE.Mesh(
@@ -411,6 +467,8 @@ export function AmmoStart(vs_source,fs_source)
 
         convertToPhysics(outerFloorMesh,new THREE.Vector3(0,-0.6,0),0,null,false,100,MAX_HEIGHT * 0.1); 
 
+       
+
         // dat.gui controls
         var controls = new function () {
             this.speed = -10;
@@ -471,7 +529,7 @@ export function AmmoStart(vs_source,fs_source)
         scene.add(Globe);
         scene.add(mapFloor);
         scene.add(mapContainer);
-        scene.add(snowBallContainer);
+        scene.add(presents);
         scene.add(snowFloorMesh);
         scene.add(outerFloorMesh);
         scene.add(stoneMesh,iceMesh,snowMesh,snow2Mesh,snowMossMesh);
@@ -1251,6 +1309,10 @@ function perlinToggle(enablePerlin) {
         // swtich material to globe physical material
         Globe.material = globeMaterial;
     }
+}
+
+function randomIntFromInterval(min, max) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
 

@@ -207,5 +207,4 @@ export function BoxShape() {
 		0.5,  0.5,  0.5 // 7
 	]);
 	this.n_faces_direct = 12;
-	__proto__: RenderShape
 }
