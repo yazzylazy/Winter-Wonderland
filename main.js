@@ -333,23 +333,19 @@ export function AmmoStart(vs_source,fs_source,vs_source_cube,fs_source_cube)
         convertToPhysics(mapContainer,new THREE.Vector3(0,0,0),0,null,false,17.1,MAX_HEIGHT * 0.0); 
         
 
-        const cube_textures = [textureCube1,textureCube2,textureCube3]
-        
-        const presents = new THREE.Group();
+        function gifts() {
+            const cube_textures = [textureCube1,textureCube2,textureCube3]
+            let present =new  THREE.Mesh(new  THREE.BoxGeometry(8, 8, 8),cube_textures[randomIntFromInterval(0, 2)]);
+                let x = randomIntFromInterval(-10, 70);
+                let z = randomIntFromInterval(4, 100);
+                let y = 4;
+                present.position.set(z, 2.5, x); 
+                scene.add(present);
+                return present;
+        }
 
-        for(let i=0;i<10;i++){
-            //add another mesh cubemapped to a box geo
-            let present =new  THREE.Mesh(
-                new  THREE.BoxGeometry(8, 8, 8),
-                cube_textures[randomIntFromInterval(0, 2)]
-            );
-            let x = randomIntFromInterval(50, 100);
-            let z = randomIntFromInterval(40, 100);
-            let y = 4;
-            present.position.set(x,y,z);
-            presents.add(present);
-            convertToPhysics(present,new THREE.Vector3(x,y,z),0,null,false,4,8); 
-        }       
+
+     
 
         // add a cylinder for the floor around the entire mesh
         let mapFloor = new THREE.Mesh(
@@ -391,6 +387,26 @@ export function AmmoStart(vs_source,fs_source,vs_source_cube,fs_source_cube)
         pesto10 = penguin();
         pesto10.position.set(1, 2.5, Math.random() * 20 +23); 
         rudolph = reindeer();
+        let present1 = gifts();
+        present1.position.set(-20, 2.5, - 4 * 20 + 46);
+        let present2 = gifts();
+        present2.position.set(70, 2.5, - 2 * 20 +20);
+        let present3 = gifts();
+        present3.position.set(71, 2.5, Math.random() * 20 +25);
+        let present4 = gifts();
+        present4.position.set(60, 2.5, - 3 * 20 +23);
+        let present5 = gifts();
+        present5.position.set(12, 2.5, Math.random() * 20 +41);
+        let present6 = gifts();
+        present6.position.set(-32, 2.5, Math.random() * 20 +44);
+        let present7 = gifts();
+        present7.position.set(-35, 2.5, - 4 * 20 +23);
+        let present8 = gifts();
+        present8.position.set(32, 2.5, Math.random() * 20 +40);
+        let present9 = gifts();
+        present9.position.set(-50, 2.5, Math.random() * 20 +30);
+        let present10 = gifts();
+        present10.position.set(19, 2.5, Math.random() * 20 +29);
         console.log(rudolph);
         window.addEventListener('keydown', handleKeyDown);
         //reindeerGenerate();
@@ -529,7 +545,6 @@ export function AmmoStart(vs_source,fs_source,vs_source_cube,fs_source_cube)
         scene.add(Globe);
         scene.add(mapFloor);
         scene.add(mapContainer);
-        scene.add(presents);
         scene.add(snowFloorMesh);
         scene.add(outerFloorMesh);
         scene.add(stoneMesh,iceMesh,snowMesh,snow2Mesh,snowMossMesh);
