@@ -4,17 +4,15 @@ import Ammo from "ammojs3";
 
 var VSHADER_SOURCE
 var FSHADER_SOURCE
-var VSHADER_SOURCE_cube 
-var FSHADER_SOURCE_cube
 
 // Read shader from file
-export function readShaderFile(fileName, shader,cube) {
+export function readShaderFile(fileName, shader) {
   var request = new XMLHttpRequest();
   request.open('GET', fileName , true);
 
   request.onreadystatechange = function() {
     if (request.readyState == 4 && request.status !== 404) {
-      onReadShader(request.responseText, shader,cube);
+      onReadShader(request.responseText, shader);
     }
   }
   // Create a request to acquire the file
@@ -23,29 +21,17 @@ export function readShaderFile(fileName, shader,cube) {
   
   
 // The shader is loaded from file
-export function onReadShader(fileString, shader,cube) {
+export function onReadShader(fileString, shader) {
   if (shader == 'v') { // Vertex shader
-    if(cube){
-      VSHADER_SOURCE_cube = fileString;
-    }
-    else {
-      VSHADER_SOURCE = fileString;
-    }
-    
+    VSHADER_SOURCE = fileString; 
   } else
   if (shader == 'f') { // Fragment shader
-    if(cube){
-      FSHADER_SOURCE_cube = fileString;
-    }
-    else{
-      FSHADER_SOURCE = fileString;
-    }
-    
+    FSHADER_SOURCE = fileString;  
   }
   // When both are available, call start().
-  if (VSHADER_SOURCE && FSHADER_SOURCE && VSHADER_SOURCE_cube && FSHADER_SOURCE_cube) {
+  if (VSHADER_SOURCE && FSHADER_SOURCE) {
     // shaders strings now available
-    Ammo().then(AmmoStart(VSHADER_SOURCE,FSHADER_SOURCE,VSHADER_SOURCE_cube,FSHADER_SOURCE_cube))
+    Ammo().then(AmmoStart(VSHADER_SOURCE,FSHADER_SOURCE))
   }
 }
   

@@ -11,7 +11,6 @@ import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise@3.0.0';
 import {readShaderFile, onReadShader, bumpMaterial} from "./shader.js";
 import {initPhysicsUniverse,updatePhysicsUniverse,convertToPhysics} from "./ammo.js";
 import { animateArmsPenguin, animateLegs, animateLegsPenguin, animateSleigh, walkPhase } from "./animation/animation.js";
-import { BoxShape } from "./box.js";
 
 // AMMO JS VARIABLE
 const ammo = await new Ammo();
@@ -91,11 +90,6 @@ let PerlinMaterial;
 let start = Date.now();
 let globeMaterial;
 let Globe; // globe mesh
-
-// cube mappig 
-var VAO; // vertex attribute object for cube mapping texture
-var img2DSampler;
-let gl;
 
 // constant for height of mountains
 const MAX_HEIGHT = 10;
@@ -193,24 +187,18 @@ function main(){
     }
 
     // Read shader from file
-    readShaderFile('shader/bump.vs', 'v',false);
-    readShaderFile('shader/bump.fs', 'f',false);
-    readShaderFile('shader/text_boxes.vs', 'v',true);
-    readShaderFile('shader/text_boxes.fs', 'f',true);
-
+    readShaderFile('shader/bump.vs', 'v');
+    readShaderFile('shader/bump.fs', 'f');
     
 }
 
 
-export function AmmoStart(vs_source,fs_source,vs_source_cube,fs_source_cube)
+export function AmmoStart(vs_source,fs_source)
 {   
-    var box = new BoxShape();
     tmpTransformation = new ammo.btTransform();
 
     initPhysicsUniverse();
     initGraphicsUniverse();
-    //initTextures(gl);
-    //initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE);
 
     //process the environment map to use in our materials
     let pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -470,14 +458,6 @@ export function AmmoStart(vs_source,fs_source,vs_source_cube,fs_source_cube)
           vertexShader: document.getElementById( 'vertexShader' ).textContent,
           fragmentShader: document.getElementById( 'fragmentShader' ).textContent
       } );
-
-        // perlin texture and displkcement on a sphere
-        // let perlinBall = new THREE.Mesh(
-        //     new THREE.SphereGeometry(1, 50,50),
-        //     PerlinMaterial
-        // );
-        // perlinBall.position.set(2,30,0);
-        // convertToPhysics(perlinBall,new THREE.Vector3(2,30,0),1,null,true,1,0); 
 
         // procedural bump mapping on a sphere
         var geometry = new THREE.SphereGeometry( 1, 32, 32 );
