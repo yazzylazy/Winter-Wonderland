@@ -3,7 +3,6 @@ import WebGL from 'three/addons/capabilities/WebGL.js';
 import Ammo from "ammojs3";
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GUI } from "dat.gui";
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@latest/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
