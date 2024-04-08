@@ -44,7 +44,9 @@ let camera;
 let loadedModel;
 let loadedModelTwo;
 
-// initialize animals
+// initialize animals and presents
+
+// penguin
 let pesto1;
 let pesto2;
 let pesto3;
@@ -55,7 +57,30 @@ let pesto7;
 let pesto8;
 let pesto9;
 let pesto10;
+
+// reindeer
 let rudolph;
+
+// presents
+let present1;
+let present2;
+let present3;
+let present4;
+let present5;
+let present6;
+let present7;
+let present8;
+let present9;
+let present10;
+let present11;
+let present12;
+let present13;
+let present14;
+let present15;
+let present16;
+let present17;
+let present18;
+let present19;
 
 // fly through
 const points = [
@@ -69,6 +94,7 @@ const curve = new THREE.CatmullRomCurve3(points);
 
 let speed = 0;
 
+// controls
 const flyThroughControls = {
     playFlyThrough: false,
     restartFlyThrough: function() {
@@ -171,12 +197,8 @@ function initGraphicsUniverse() {
         gltfScene.scene.scale.set(0.01,0.01,0.01);
         scene.add(gltfScene.scene);
 
-    });
-
-    
+    });  
 }
-
-
 
 // entry point
 function main(){
@@ -186,12 +208,10 @@ function main(){
         document.body.appendChild(WebGL.getWebGLErrorMessage());
     }
 
-    // Read shader from file
+    // read shader from file
     readShaderFile('shader/bump.vs', 'v');
-    readShaderFile('shader/bump.fs', 'f');
-    
+    readShaderFile('shader/bump.fs', 'f');   
 }
-
 
 export function AmmoStart(vs_source,fs_source)
 {   
@@ -209,9 +229,8 @@ export function AmmoStart(vs_source,fs_source)
         .load("assets/snowy_hillside_4k.hdr", function (texture) {
             envmap = pmremGenerator.fromEquirectangular(texture).texture;
             pmremGenerator.dispose();
-        // Ensure the environment map is set or updated here, e.g., for your materials or scene background
         
-        //load cube texture
+        // load cube texture
         const textureLoader = new THREE.TextureLoader();
 
         const textureCube1 = [
@@ -274,7 +293,6 @@ export function AmmoStart(vs_source,fs_source)
         }
 
         // create a new hexagon geomtry with added environment material mapping depending on each type of hexagon
-        
         let stoneMesh = hexMesh(stoneGeo,textures.SnowStone);
         let iceMesh = hexMesh(iceGeo,textures.ice);
         let snowMesh = hexMesh(snowGeo,textures.snow);
@@ -320,20 +338,16 @@ export function AmmoStart(vs_source,fs_source)
 
         convertToPhysics(mapContainer,new THREE.Vector3(0,0,0),0,null,false,17.1,MAX_HEIGHT * 0.0); 
         
-
+        // randomized presents
         function gifts() {
             const cube_textures = [textureCube1,textureCube2,textureCube3]
             let present =new  THREE.Mesh(new  THREE.BoxGeometry(8, 8, 8),cube_textures[randomIntFromInterval(0, 2)]);
                 let x = randomIntFromInterval(-10, 70);
                 let z = randomIntFromInterval(4, 100);
-                let y = 4;
                 present.position.set(z, 2.5, x); 
                 scene.add(present);
                 return present;
         }
-
-
-     
 
         // add a cylinder for the floor around the entire mesh
         let mapFloor = new THREE.Mesh(
@@ -350,10 +364,10 @@ export function AmmoStart(vs_source,fs_source)
 
         convertToPhysics(mapFloor,new THREE.Vector3(0,-MAX_HEIGHT * 0.05,0),0,null,false,21,MAX_HEIGHT * 0.1); 
         
-        // and random clouds
+        // random clouds in globe
         clouds();
 
-        // penguins and reindeer
+        // penguins, reindeer, and presents setup
         pesto1 = penguin();
         pesto1.position.set(-10, 2.5, - 4 * 20 + 23); 
         pesto2 = penguin();
@@ -375,49 +389,49 @@ export function AmmoStart(vs_source,fs_source)
         pesto10 = penguin();
         pesto10.position.set(1, 2.5, Math.random() * 20 +23); 
         rudolph = reindeer();
-        let present1 = gifts();
+        present1 = gifts();
         present1.position.set(-20, 2.5, - 4 * 20 + 46);
-        let present2 = gifts();
+        present2 = gifts();
         present2.position.set(70, 2.5, - 2 * 20 +20);
-        let present3 = gifts();
+        present3 = gifts();
         present3.position.set(71, 2.5, Math.random() * 20 +25);
-        let present4 = gifts();
+        present4 = gifts();
         present4.position.set(60, 2.5, - 3 * 20 +23);
-        let present5 = gifts();
+        present5 = gifts();
         present5.position.set(12, 2.5, Math.random() * 20 +41);
-        let present6 = gifts();
+        present6 = gifts();
         present6.position.set(-32, 2.5, Math.random() * 20 +44);
-        let present7 = gifts();
+        present7 = gifts();
         present7.position.set(-35, 2.5, - 4 * 20 +23);
-        let present8 = gifts();
+        present8 = gifts();
         present8.position.set(32, 2.5, Math.random() * 20 +40);
-        let present9 = gifts();
+        present9 = gifts();
         present9.position.set(-50, 2.5, Math.random() * 20 +30);
-        let present10 = gifts();
+        present10 = gifts();
         present10.position.set(19, 2.5, Math.random() * 20 +29);
-        // physics
-        let present11 = gifts();
+
+        // physics present 11
+        present11 = gifts();
         present11.position.set(50, 2.5, 0);
         convertToPhysics(present11,new THREE.Vector3(50,2.5,0),0,null,false,4,8);
-        let present12 = gifts();
+
+        present12 = gifts();
         present12.position.set(-50, 2.5, 0);
-        let present13 = gifts();
+        present13 = gifts();
         present13.position.set(-80, 2.5, 0);
-        let present14 = gifts();
+        present14 = gifts();
         present14.position.set(0, 2.5, -50);
-        let present15 = gifts();
+        present15 = gifts();
         present15.position.set(0, 2.5, -80);
-        let present16 = gifts();
+        present16 = gifts();
         present16.position.set(0, 2.5, 80);
-        let present17 = gifts();
+        present17 = gifts();
         present17.position.set(-20, 2.5, 80);
-        let present18 = gifts();
+        present18 = gifts();
         present18.position.set(20, 2.5, -70);
-        let present19 = gifts();
+        present19 = gifts();
         present19.position.set(30, 2.5, -50);
-        console.log(rudolph);
         window.addEventListener('keydown', handleKeyDown);
-        //reindeerGenerate();
 
         addSnowflakes(textures);
 
@@ -507,15 +521,14 @@ export function AmmoStart(vs_source,fs_source)
                     bm.uniforms.SurfColor.value.g = controls.surf_color[1]/255.0;
                     bm.uniforms.SurfColor.value.b = controls.surf_color[2]/255.0;
                   }
-                // Add changing other uniforms
+                // add changing other uniforms
                 bm.uniforms.BumpDensity.value = controls.bumpDensity;
                 bm.uniforms.BumpSize.value = controls.bumpSize;
                 bm.uniforms.SpecularFactor.value = controls.specularFactor;
 
                 let deltaTime = clock.getDelta();
                 updatePhysicsUniverse( deltaTime );
-                renderer.render( scene, camera );
-                
+                renderer.render( scene, camera );    
             };
             };
 
@@ -548,15 +561,11 @@ export function AmmoStart(vs_source,fs_source)
         scene.add(snowFloorMesh);
         scene.add(outerFloorMesh);
         scene.add(stoneMesh,iceMesh,snowMesh,snow2Mesh,snowMossMesh);
-        //scene.add(perlinBall);
         scene.add(bumpMapBall);
-        
         
         render();
 
     });
-    
-    
 }
 
 // start program
@@ -570,7 +579,8 @@ function render()
         PerlinMaterial.uniforms[ 'time' ].value = .00025 * ( Date.now() - start );
 
         updateSnowFlakes();
-        //controls.update();
+
+        // animal skeletal animations
         if (rudolph) animateLegs(rudolph);
         if (rudolph) animateSleigh(rudolph);
 
@@ -594,6 +604,8 @@ function render()
         if (pesto9) animateLegsPenguin(pesto9, clock.getElapsedTime());
         if (pesto10) animateArmsPenguin(pesto10, clock.getElapsedTime());
         if (pesto10) animateLegsPenguin(pesto10, clock.getElapsedTime());
+
+        // fly-through animation
         flyThrough();
 
         // rudolph POV
@@ -609,8 +621,6 @@ function render()
                 camera.rotateY(Math.PI / 2);
             }
         }
-
-
         renderer.render( scene, camera );
         requestAnimationFrame( render );
 }
@@ -932,6 +942,7 @@ function penguin() {
     return penguin;
 }
 
+// make rudolph
 function reindeer(){
     const reindeer = new THREE.Group();
 
@@ -1254,8 +1265,6 @@ function reindeer(){
 }
 
 // move reindeer with keyboard
-
-
 let direction;
 
 function handleKeyDown(event) {
@@ -1286,8 +1295,7 @@ function handleKeyDown(event) {
     }
 }
 
-
-// fly-through
+// fly-through function
 function flyThrough() {
     if (flyThroughControls.playFlyThrough) {
         speed += 0.001;
@@ -1301,6 +1309,7 @@ function flyThrough() {
     }
 }
 
+// toggles for reindeer and perlin
 let ogPosition = new THREE.Vector3();
 let ogRotation = new THREE.Euler();
 
@@ -1326,7 +1335,8 @@ function perlinToggle(enablePerlin) {
     }
 }
 
-function randomIntFromInterval(min, max) { // min and max included 
+// placing presents randomly
+function randomIntFromInterval(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
