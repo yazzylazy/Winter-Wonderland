@@ -338,11 +338,11 @@ export function AmmoStart(vs_source,fs_source)
         convertToPhysics(mapContainer,new THREE.Vector3(0,0,0),0,null,false,17.1,MAX_HEIGHT * 0.0); 
         
         // randomized presents
-        function gifts() {
+        function presents() {
             const cube_textures = [textureCube1,textureCube2,textureCube3]
-            let present =new  THREE.Mesh(new  THREE.BoxGeometry(8, 8, 8),cube_textures[randomIntFromInterval(0, 2)]);
-                let x = randomIntFromInterval(-10, 70);
-                let z = randomIntFromInterval(4, 100);
+            let present =new  THREE.Mesh(new  THREE.BoxGeometry(8, 8, 8),cube_textures[randomInt(0, 2)]);
+                let x = randomInt(-10, 70);
+                let z = randomInt(4, 100);
                 present.position.set(z, 2.5, x); 
                 scene.add(present);
                 return present;
@@ -388,47 +388,47 @@ export function AmmoStart(vs_source,fs_source)
         pesto10 = penguin();
         pesto10.position.set(1, 2.5, Math.random() * 20 +23); 
         rudolph = reindeer();
-        present1 = gifts();
+        present1 = presents();
         present1.position.set(-20, 2.5, - 4 * 20 + 46);
-        present2 = gifts();
+        present2 = presents();
         present2.position.set(70, 2.5, - 2 * 20 +20);
-        present3 = gifts();
+        present3 = presents();
         present3.position.set(71, 2.5, Math.random() * 20 +25);
-        present4 = gifts();
+        present4 = presents();
         present4.position.set(60, 2.5, - 3 * 20 +23);
-        present5 = gifts();
+        present5 = presents();
         present5.position.set(12, 2.5, Math.random() * 20 +41);
-        present6 = gifts();
+        present6 = presents();
         present6.position.set(-32, 2.5, Math.random() * 20 +44);
-        present7 = gifts();
+        present7 = presents();
         present7.position.set(-35, 2.5, - 4 * 20 +23);
-        present8 = gifts();
+        present8 = presents();
         present8.position.set(32, 2.5, Math.random() * 20 +40);
-        present9 = gifts();
+        present9 = presents();
         present9.position.set(-50, 2.5, Math.random() * 20 +30);
-        present10 = gifts();
+        present10 = presents();
         present10.position.set(19, 2.5, Math.random() * 20 +29);
 
         // physics present 11
-        present11 = gifts();
+        present11 = presents();
         present11.position.set(50, 2.5, 0);
         convertToPhysics(present11,new THREE.Vector3(50,2.5,0),0,null,false,4,8);
 
-        present12 = gifts();
+        present12 = presents();
         present12.position.set(-50, 2.5, 0);
-        present13 = gifts();
+        present13 = presents();
         present13.position.set(-80, 2.5, 0);
-        present14 = gifts();
+        present14 = presents();
         present14.position.set(0, 2.5, -50);
-        present15 = gifts();
+        present15 = presents();
         present15.position.set(0, 2.5, -80);
-        present16 = gifts();
+        present16 = presents();
         present16.position.set(0, 2.5, 80);
-        present17 = gifts();
+        present17 = presents();
         present17.position.set(-20, 2.5, 80);
-        present18 = gifts();
+        present18 = presents();
         present18.position.set(20, 2.5, -70);
-        present19 = gifts();
+        present19 = presents();
         present19.position.set(30, 2.5, -50);
         window.addEventListener('keydown', handleKeyDown);
 
@@ -1335,7 +1335,7 @@ function perlinToggle(enablePerlin) {
 }
 
 // placing presents randomly
-function randomIntFromInterval(min, max) {
+function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
