@@ -5,6 +5,6 @@ The centerpiece of our winter wonderland is a large, transparent snow globe. But
 * index.html (HTML file with model)
 * main.js has our main js code
 * ammo.js has ammo.js physics engine code
+* shader.js reads vertex and fragment shader files in shader folder
 * assets folder has images/meshes used in model
 * animation folder has functions for skeletal animations
-* shader folder has vertex and fragment shader
